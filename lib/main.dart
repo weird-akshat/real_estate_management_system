@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:real_estate_management_system/login_page.dart';
+import 'package:real_estate_management_system/pages/login_page.dart';
+import 'package:real_estate_management_system/pages/property_listing_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -10,6 +11,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(home: LoginPage());
+    return const MaterialApp(home: PropertyListingPage());
   }
 }
