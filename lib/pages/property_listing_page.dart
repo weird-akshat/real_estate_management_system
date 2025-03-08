@@ -6,57 +6,182 @@ class PropertyListingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text("Properties"),
-          centerTitle: true,
-        ),
-        body: GridView.builder(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, // Number of columns
-            crossAxisSpacing: 10, // Spacing between columns
-            mainAxisSpacing: 10, // Spacing between rows
-            childAspectRatio: 1, // Aspect ratio of each item
+      bottomNavigationBar:
+          BottomNavigationBar(backgroundColor: Colors.black, items: [
+        BottomNavigationBarItem(
+            icon: Icon(
+              Icons.home,
+              color: Colors.yellow,
+            ),
+            label: ""),
+        BottomNavigationBarItem(
+          icon: Icon(
+            Icons.favorite,
+            color: Colors.white,
           ),
-          itemCount: 11,
-          itemBuilder: (context, index) {
-            return Container(
-              decoration:
-                  BoxDecoration(border: Border.all(color: Colors.black)),
+          label: "",
+        )
+      ]),
+      appBar: AppBar(
+        leading: Icon(Icons.menu),
+        actions: [
+          Icon(Icons.notification_add_sharp),
+          Icon(Icons.person),
+        ],
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 200,
+                child: TextField(
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.search),
+                    border: OutlineInputBorder(),
+                    hintText: 'Location',
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextButton(
+                    style: ButtonStyle(
+                      fixedSize: WidgetStatePropertyAll(Size(58, 58)),
+                      shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)))),
+                      backgroundColor: WidgetStatePropertyAll(
+                          const Color.fromARGB(218, 12, 12, 12)),
+                    ),
+                    onPressed: () {},
+                    child: Icon(
+                      Icons.tune,
+                      color: Colors.white,
+                    )),
+              )
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: Text(
+              'Categories',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+          ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 10,
+                ),
+                CategoryChip(label: 'Houses'),
+                SizedBox(
+                  width: 15,
+                ),
+                CategoryChip(label: 'Offices'),
+                SizedBox(
+                  width: 15,
+                ),
+                CategoryChip(label: 'Appartments')
+              ],
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.asset("assets/images/housepic.jpg"),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Text('data'),
-                          Text('data'),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      color: Colors.blue,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Text('data'),
-                            Text('data'),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  PropertyCard(image: 'housepic.jpg'),
+                  PropertyCard(image: 'housepic3.jpeg'),
+                  PropertyCard(image: 'housepic2.jpeg'),
                 ],
               ),
-            );
-          },
-        ));
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class PropertyCard extends StatelessWidget {
+  final String image;
+  const PropertyCard({super.key, required this.image});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+          border: Border.all(), borderRadius: BorderRadius.circular(20)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Image.asset(
+                'assets/images/$image',
+              ),
+            ),
+          ),
+          Text(
+            'Shanti Nivaas',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.bed),
+                  Text('3 bedroom'),
+                ],
+              ),
+              Row(
+                children: [
+                  Icon(Icons.pin_drop),
+                  Text('Locality'),
+                ],
+              ),
+              Row(
+                children: [
+                  Icon(Icons.currency_rupee),
+                  Text('46,00,000'),
+                ],
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class CategoryChip extends StatelessWidget {
+  final String label;
+  const CategoryChip({super.key, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: Chip(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all((Radius.circular(14)))),
+        label: Text(
+          label,
+          style: TextStyle(fontSize: 15),
+        ),
+        padding: EdgeInsets.all(15),
+      ),
+    );
   }
 }
