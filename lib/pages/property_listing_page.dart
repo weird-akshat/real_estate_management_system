@@ -11,7 +11,7 @@ class PropertyListingPage extends StatelessWidget {
         BottomNavigationBarItem(
             icon: Icon(
               Icons.home,
-              color: Colors.yellow,
+              color: Colors.blueGrey,
             ),
             label: ""),
         BottomNavigationBarItem(
@@ -39,6 +39,13 @@ class PropertyListingPage extends StatelessWidget {
                 width: 200,
                 child: TextField(
                   decoration: InputDecoration(
+                    enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(20)),
+                        borderSide: BorderSide(color: Colors.black, width: 2)),
+                    focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(20)),
+                        borderSide: BorderSide(color: Colors.black, width: 2)),
+                    focusColor: Colors.black,
                     prefixIcon: Icon(Icons.search),
                     border: OutlineInputBorder(),
                     hintText: 'Location',
@@ -80,7 +87,7 @@ class PropertyListingPage extends StatelessWidget {
                 SizedBox(
                   width: 10,
                 ),
-                CategoryChip(label: 'Houses'),
+                CCategoryChip(label: 'Houses'),
                 SizedBox(
                   width: 15,
                 ),
@@ -117,49 +124,84 @@ class PropertyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-          border: Border.all(), borderRadius: BorderRadius.circular(20)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Padding(
+      decoration: BoxDecoration(),
+      // color: Colors.black87,
+      // borderRadius: BorderRadius.circular(20),
+      child: Card(
+        surfaceTintColor: Colors.white,
+
+        margin: EdgeInsets.all(10),
+        elevation: 15,
+        // decoration: BoxDecoration(
+        // border: Border.all(),
+        // borderRadius: BorderRadius.circular(20),
+        // ),
+
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Image.asset(
-                'assets/images/$image',
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Image.asset(
+                  'assets/images/$image',
+                ),
               ),
             ),
-          ),
-          Text(
-            'Shanti Nivaas',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.bed),
-                  Text('3 bedroom'),
-                ],
-              ),
-              Row(
-                children: [
-                  Icon(Icons.pin_drop),
-                  Text('Locality'),
-                ],
-              ),
-              Row(
-                children: [
-                  Icon(Icons.currency_rupee),
-                  Text('46,00,000'),
-                ],
-              ),
-            ],
-          )
-        ],
+            Text(
+              'Shanti Nivaas',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.bed),
+                    Text('3 bedroom'),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Icon(Icons.pin_drop),
+                    Text('Locality'),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Icon(Icons.currency_rupee),
+                    Text('46,00,000'),
+                  ],
+                ),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CCategoryChip extends StatelessWidget {
+  final String label;
+  const CCategoryChip({super.key, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: Chip(
+        color: WidgetStatePropertyAll(Colors.black87),
+        elevation: 10,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all((Radius.circular(14)))),
+        label: Text(
+          label,
+          style: TextStyle(
+              fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        padding: EdgeInsets.all(15),
       ),
     );
   }
@@ -174,11 +216,12 @@ class CategoryChip extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(5.0),
       child: Chip(
+        elevation: 10,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all((Radius.circular(14)))),
         label: Text(
           label,
-          style: TextStyle(fontSize: 15),
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
         ),
         padding: EdgeInsets.all(15),
       ),
