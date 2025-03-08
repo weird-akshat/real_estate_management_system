@@ -23,6 +23,11 @@ class PropertyListingPage extends StatelessWidget {
         )
       ]),
       appBar: AppBar(
+        title: Text(
+          "Properties",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
         leading: Icon(Icons.menu),
         actions: [
           Icon(Icons.notification_add_sharp),
