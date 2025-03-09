@@ -100,7 +100,11 @@ class PropertyListingPage extends StatelessWidget {
                 SizedBox(
                   width: 15,
                 ),
-                CategoryChip(label: 'Appartments')
+                CategoryChip(label: 'Appartments'),
+                SizedBox(
+                  width: 15,
+                ),
+                CategoryChip(label: 'Bunglows')
               ],
             ),
           ),
@@ -133,7 +137,10 @@ class PropertyCard extends StatelessWidget {
       // color: Colors.black87,
       // borderRadius: BorderRadius.circular(20),
       child: Card(
-        surfaceTintColor: Colors.white,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(color: Colors.black, width: 0.3)),
+        surfaceTintColor: Colors.white70,
 
         margin: EdgeInsets.all(10),
         elevation: 15,
@@ -204,7 +211,7 @@ class CCategoryChip extends StatelessWidget {
         label: Text(
           label,
           style: TextStyle(
-              fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+              fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         padding: EdgeInsets.all(15),
       ),
@@ -226,7 +233,7 @@ class CategoryChip extends StatelessWidget {
             borderRadius: BorderRadius.all((Radius.circular(14)))),
         label: Text(
           label,
-          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
         ),
         padding: EdgeInsets.all(15),
       ),
