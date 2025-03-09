@@ -139,7 +139,7 @@ class PropertyCard extends StatelessWidget {
       child: Card(
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
-            side: BorderSide(color: Colors.black, width: 0.3)),
+            side: BorderSide(color: Colors.black, width: 0.1)),
         surfaceTintColor: Colors.white70,
 
         margin: EdgeInsets.all(10),
