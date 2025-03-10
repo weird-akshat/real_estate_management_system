@@ -6,22 +6,6 @@ class PropertyDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar:
-          BottomNavigationBar(backgroundColor: Colors.black, items: [
-        BottomNavigationBarItem(
-            icon: Icon(
-              Icons.home,
-              color: Colors.blueGrey,
-            ),
-            label: ""),
-        BottomNavigationBarItem(
-          icon: Icon(
-            Icons.favorite,
-            color: Colors.white,
-          ),
-          label: "",
-        )
-      ]),
       body: Stack(
         children: [
           Positioned.fill(
@@ -35,9 +19,22 @@ class PropertyDetailsPage extends StatelessWidget {
             children: [
               SizedBox(
                 width: double.infinity,
-                child: Image.asset(
-                  'assets/images/housepic3.jpeg',
-                  fit: BoxFit.cover,
+                child: Stack(
+                  children: [
+                    Image.asset(
+                      'assets/images/housepic3.jpeg',
+                      fit: BoxFit.cover,
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(15, 30, 0, 0),
+                        child: Icon(Icons.arrow_back),
+                      ),
+                    )
+                  ],
                 ),
               ),
               Padding(

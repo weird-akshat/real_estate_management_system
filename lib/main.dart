@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        home: OwnedPropertyPage(),
+        home: LoginPage(),
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           textTheme: GoogleFonts.gentiumPlusTextTheme(),

@@ -72,7 +72,6 @@ class _PropertyListingPageState extends State<PropertyListingPage> {
         centerTitle: true,
         leading: Icon(Icons.menu),
         actions: [
-          Icon(Icons.notification_add_sharp),
           Icon(Icons.person),
         ],
       ),
