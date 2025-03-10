@@ -218,28 +218,31 @@ class PropertyCard extends StatelessWidget {
                 'Shanti Nivaas',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.bed),
-                      Text('3 bedroom'),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.pin_drop),
-                      Text('Locality'),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.currency_rupee),
-                      Text('46,00,000'),
-                    ],
-                  ),
-                ],
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.bed),
+                        Text('3 bedroom'),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Icon(Icons.pin_drop),
+                        Text('Locality'),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Icon(Icons.currency_rupee),
+                        Text('46,00,000'),
+                      ],
+                    ),
+                  ],
+                ),
               )
             ],
           ),
