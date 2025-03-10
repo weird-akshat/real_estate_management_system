@@ -7,56 +7,64 @@ class FavoritesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Text(
-              'Categories',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
+      body: Stack(children: [
+        Positioned.fill(
+          child: Image.asset(
+            'assets/images/loginbackground.jpg',
+            fit: BoxFit.cover,
+          ),
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: Text(
+                'Categories',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
               ),
             ),
-          ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 10,
-                ),
-                CCategoryChip(label: 'Houses'),
-                SizedBox(
-                  width: 15,
-                ),
-                CategoryChip(label: 'Offices'),
-                SizedBox(
-                  width: 15,
-                ),
-                CategoryChip(label: 'Appartments'),
-                SizedBox(
-                  width: 15,
-                ),
-                CategoryChip(label: 'Bunglows')
-              ],
-            ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Column(
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
                 children: [
-                  PropertyCard(image: 'housepic.jpg'),
-                  PropertyCard(image: 'housepic3.jpeg'),
-                  PropertyCard(image: 'housepic2.jpeg'),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  CCategoryChip(label: 'Houses'),
+                  SizedBox(
+                    width: 15,
+                  ),
+                  CategoryChip(label: 'Offices'),
+                  SizedBox(
+                    width: 15,
+                  ),
+                  CategoryChip(label: 'Appartments'),
+                  SizedBox(
+                    width: 15,
+                  ),
+                  CategoryChip(label: 'Bunglows')
                 ],
               ),
             ),
-          )
-        ],
-      ),
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Column(
+                  children: [
+                    PropertyCard(image: 'housepic.jpg'),
+                    PropertyCard(image: 'housepic3.jpeg'),
+                    PropertyCard(image: 'housepic2.jpeg'),
+                  ],
+                ),
+              ),
+            )
+          ],
+        ),
+      ]),
     );
   }
 }

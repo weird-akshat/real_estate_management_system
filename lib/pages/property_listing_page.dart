@@ -76,7 +76,15 @@ class _PropertyListingPageState extends State<PropertyListingPage> {
           Icon(Icons.person),
         ],
       ),
-      body: currentBody,
+      body: Stack(children: [
+        Positioned.fill(
+          child: Image.asset(
+            'assets/images/loginbackground.jpg',
+            fit: BoxFit.cover,
+          ),
+        ),
+        currentBody
+      ]),
     );
   }
 }
