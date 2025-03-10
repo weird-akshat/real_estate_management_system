@@ -24,40 +24,46 @@ class _PropertyListingPageState extends State<PropertyListingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar:
-          BottomNavigationBar(backgroundColor: Colors.black, items: [
-        BottomNavigationBarItem(
-            icon: GestureDetector(
-              onTap: () {
-                setState(() {
-                  currentBody = BodyPropertyList();
-                  appBarHeading = "Properties";
-                  x = 0;
-                });
-              },
-              child: Icon(
-                Icons.home,
-                color: x == 0 ? Colors.white : Colors.blueGrey,
-              ),
-            ),
-            label: ""),
-        BottomNavigationBarItem(
-          icon: GestureDetector(
-            onTap: () {
+      bottomNavigationBar: BottomNavigationBar(
+          onTap: (index) {
+            x = index;
+            if (index == 0) {
+              setState(() {
+                currentBody = BodyPropertyList();
+                appBarHeading = "Properties";
+              });
+            } else {
               setState(() {
                 currentBody = FavoritesPage();
                 appBarHeading = "Favorites";
-                x = 1;
               });
-            },
-            child: Icon(
-              Icons.favorite,
-              color: x == 0 ? Colors.blueGrey : Colors.white,
-            ),
-          ),
-          label: "",
-        )
-      ]),
+            }
+          },
+          backgroundColor: Colors.black,
+          items: [
+            BottomNavigationBarItem(
+                icon: Icon(
+                  Icons.home,
+                  color: x == 0 ? Colors.white : Colors.blueGrey,
+                ),
+                label: ""),
+            BottomNavigationBarItem(
+              icon: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    currentBody = FavoritesPage();
+                    appBarHeading = "Favorites";
+                    x = 1;
+                  });
+                },
+                child: Icon(
+                  Icons.favorite,
+                  color: x == 0 ? Colors.blueGrey : Colors.white,
+                ),
+              ),
+              label: "",
+            )
+          ]),
       appBar: AppBar(
         title: Text(
           appBarHeading,
