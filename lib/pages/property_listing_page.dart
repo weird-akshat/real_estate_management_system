@@ -70,11 +70,58 @@ class _PropertyListingPageState extends State<PropertyListingPage> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        leading: Icon(Icons.menu),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: Icon(Icons.menu),
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+          ),
+        ),
         actions: [
           Icon(Icons.person),
         ],
       ),
+      drawer: Drawer(
+          child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(10, 40, 0, 0),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    'Profile',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          TextButton(
+              onPressed: () {},
+              style: ButtonStyle(
+                iconSize: WidgetStatePropertyAll(5),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.dashboard,
+                    size: 40,
+                  ),
+                  Text(
+                    'dashboard',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ))
+        ],
+      )),
       body: Stack(children: [
         Positioned.fill(
           child: Image.asset(
