@@ -8,22 +8,6 @@ class OwnedPropertyDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar:
-          BottomNavigationBar(backgroundColor: Colors.black, items: [
-        BottomNavigationBarItem(
-            icon: Icon(
-              Icons.home,
-              color: Colors.blueGrey,
-            ),
-            label: ""),
-        BottomNavigationBarItem(
-          icon: Icon(
-            Icons.favorite,
-            color: Colors.white,
-          ),
-          label: "",
-        )
-      ]),
       body: Stack(
         children: [
           Positioned.fill(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:real_estate_management_system/pages/favorites_page.dart';
+
 import 'package:real_estate_management_system/pages/property_details.dart';
+
+late Widget chip1, chip2, chip3, chip4;
 
 class PropertyListingPage extends StatefulWidget {
   const PropertyListingPage({super.key});
@@ -10,135 +12,76 @@ class PropertyListingPage extends StatefulWidget {
 }
 
 class _PropertyListingPageState extends State<PropertyListingPage> {
-  late Widget currentBody;
-  late String appBarHeading;
-  late int x;
-  @override
-  void initState() {
-    super.initState();
-    currentBody = BodyPropertyList();
-    appBarHeading = "Properties";
-    x = 0;
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: BottomNavigationBar(
-          onTap: (index) {
-            x = index;
-            if (index == 0) {
-              setState(() {
-                currentBody = BodyPropertyList();
-                appBarHeading = "Properties";
-              });
-            } else {
-              setState(() {
-                currentBody = FavoritesPage();
-                appBarHeading = "Favorites";
-              });
-            }
-          },
-          backgroundColor: Colors.black,
-          items: [
-            BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.home,
-                  color: x == 0 ? Colors.white : Colors.blueGrey,
-                ),
-                label: ""),
-            BottomNavigationBarItem(
-              icon: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    currentBody = FavoritesPage();
-                    appBarHeading = "Favorites";
-                    x = 1;
-                  });
-                },
-                child: Icon(
-                  Icons.favorite,
-                  color: x == 0 ? Colors.blueGrey : Colors.white,
-                ),
-              ),
-              label: "",
-            )
-          ]),
-      appBar: AppBar(
-        title: Text(
-          appBarHeading,
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu),
-            onPressed: () {
-              Scaffold.of(context).openDrawer();
-            },
-          ),
-        ),
-        actions: [
-          Icon(Icons.person),
-        ],
-      ),
-      drawer: Drawer(
-          child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 40, 0, 0),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Profile',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          TextButton(
-              onPressed: () {},
-              style: ButtonStyle(
-                iconSize: WidgetStatePropertyAll(5),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.dashboard,
-                    size: 40,
-                  ),
-                  Text(
-                    'dashboard',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ))
-        ],
-      )),
-      body: Stack(children: [
-        Positioned.fill(
-          child: Image.asset(
-            'assets/images/loginbackground.jpg',
-            fit: BoxFit.cover,
-          ),
-        ),
-        currentBody
-      ]),
-    );
+    return Scaffold(body: BodyPropertyList());
   }
 }
 
-class BodyPropertyList extends StatelessWidget {
+class SidebarButton extends StatelessWidget {
+  final VoidCallback onTap;
+  final IconData icondata;
+  final String text;
+  final Widget widget;
+
+  const SidebarButton(
+    this.icondata,
+    this.text,
+    this.widget, {
+    super.key,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+        onPressed: onTap,
+        style: ButtonStyle(
+          iconSize: WidgetStatePropertyAll(5),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icondata,
+              size: 40,
+            ),
+            Text(
+              text,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ));
+  }
+}
+
+class BodyPropertyList extends StatefulWidget {
   const BodyPropertyList({
     super.key,
   });
+
+  @override
+  State<BodyPropertyList> createState() => _BodyPropertyListState();
+}
+
+class _BodyPropertyListState extends State<BodyPropertyList> {
+  @override
+  void initState() {
+    super.initState();
+    chip1 = CategoryChip(
+      label: 'Houses',
+      color: Colors.black,
+    );
+    // chip1.color = Colors.black;
+    chip2 = CategoryChip(
+      label: 'Offices',
+      color: Colors.white,
+    );
+    chip3 = CategoryChip(label: 'Appartments', color: Colors.white);
+    chip4 = CategoryChip(
+      label: 'Bunglows',
+      color: Colors.white,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -193,29 +136,7 @@ class BodyPropertyList extends StatelessWidget {
             ),
           ),
         ),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: [
-              SizedBox(
-                width: 10,
-              ),
-              CCategoryChip(label: 'Houses'),
-              SizedBox(
-                width: 15,
-              ),
-              CategoryChip(label: 'Offices'),
-              SizedBox(
-                width: 15,
-              ),
-              CategoryChip(label: 'Appartments'),
-              SizedBox(
-                width: 15,
-              ),
-              CategoryChip(label: 'Bunglows')
-            ],
-          ),
-        ),
+        Categories(),
         Expanded(
           child: SingleChildScrollView(
             scrollDirection: Axis.vertical,
@@ -229,6 +150,39 @@ class BodyPropertyList extends StatelessWidget {
           ),
         )
       ],
+    );
+  }
+}
+
+class Categories extends StatelessWidget {
+  const Categories({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          SizedBox(
+            width: 10,
+          ),
+          chip1,
+          SizedBox(
+            width: 15,
+          ),
+          chip2,
+          SizedBox(
+            width: 15,
+          ),
+          chip3,
+          SizedBox(
+            width: 15,
+          ),
+          chip4
+        ],
+      ),
     );
   }
 }
@@ -312,47 +266,42 @@ class PropertyCard extends StatelessWidget {
   }
 }
 
-class CCategoryChip extends StatelessWidget {
+class CategoryChip extends StatefulWidget {
+  final Color color;
   final String label;
-  const CCategoryChip({super.key, required this.label});
+  const CategoryChip({super.key, required this.label, required this.color});
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(5.0),
-      child: Chip(
-        color: WidgetStatePropertyAll(Colors.black87),
-        elevation: 10,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all((Radius.circular(14)))),
-        label: Text(
-          label,
-          style: TextStyle(
-              fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        padding: EdgeInsets.all(15),
-      ),
-    );
-  }
+  State<CategoryChip> createState() => _CategoryChipState(color);
 }
 
-class CategoryChip extends StatelessWidget {
-  final String label;
-  const CategoryChip({super.key, required this.label});
-
+class _CategoryChipState extends State<CategoryChip> {
+  _CategoryChipState(this.color);
+  late Color color;
+  @override
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(5.0),
-      child: Chip(
-        elevation: 10,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all((Radius.circular(14)))),
-        label: Text(
-          label,
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+    return GestureDetector(
+      onTap: () {
+        color = color == Colors.white ? Colors.black : Colors.white;
+        setState(() {});
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(5.0),
+        child: Chip(
+          backgroundColor: color,
+          elevation: 10,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all((Radius.circular(14)))),
+          label: Text(
+            widget.label,
+            style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: color == Colors.white ? Colors.black : Colors.white),
+          ),
+          padding: EdgeInsets.all(15),
         ),
-        padding: EdgeInsets.all(15),
       ),
     );
   }

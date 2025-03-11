@@ -10,18 +10,6 @@ class OwnedPropertyPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: GestureDetector(
-            onTap: () {
-              Navigator.of(context).pop();
-            },
-            child: Icon(Icons.arrow_back)),
-        centerTitle: true,
-        title: Text(
-          'Owned Properties',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
       body: Stack(
         children: [
           Positioned.fill(

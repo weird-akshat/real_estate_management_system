@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:real_estate_management_system/pages/home_page.dart';
 import 'package:real_estate_management_system/pages/property_listing_page.dart';
 import 'registeration_page.dart';
 
@@ -91,8 +92,8 @@ class LoginPage extends StatelessWidget {
           fixedSize: const WidgetStatePropertyAll(Size(300, 50)),
         ),
         onPressed: () {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => PropertyListingPage()));
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => HomePage()));
         },
         child: const Text(
           'Login',
