@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:real_estate_management_system/pages/add_property_page.dart';
 import 'package:real_estate_management_system/pages/favorites_page.dart';
 import 'package:real_estate_management_system/pages/owned_property_page.dart';
+import 'package:real_estate_management_system/pages/profile_page.dart';
 import 'package:real_estate_management_system/pages/property_listing_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -92,11 +93,25 @@ class _HomePageState extends State<HomePage> {
                 CircleAvatar(
                   radius: 29,
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Profile',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pop();
+
+                    if (currentBody.runtimeType != ProfilePage) {
+                      setState(() {
+                        currentBody = ProfilePage();
+                        appBarHeading = "Profile";
+                        x = 3;
+                      });
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      'Profile',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    ),
                   ),
                 ),
               ],

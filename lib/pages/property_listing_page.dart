@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:real_estate_management_system/pages/filter_page.dart';
 
 import 'package:real_estate_management_system/pages/property_details.dart';
 
@@ -118,7 +119,12 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
                     backgroundColor: WidgetStatePropertyAll(
                         const Color.fromARGB(218, 12, 12, 12)),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return PropertyFilterPage();
+                    }));
+                  },
                   child: Icon(
                     Icons.tune,
                     color: Colors.white,
