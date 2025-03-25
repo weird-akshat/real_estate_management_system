@@ -1,7 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:real_estate_management_system/pages/filter_page.dart';
 
 import 'package:real_estate_management_system/pages/property_details.dart';
+import 'package:http/http.dart' as http;
+import 'package:real_estate_management_system/property_details_provider.dart';
 
 late Widget chip1, chip2, chip3, chip4;
 
@@ -14,8 +19,35 @@ class PropertyListingPage extends StatefulWidget {
 
 class _PropertyListingPageState extends State<PropertyListingPage> {
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(body: BodyPropertyList());
+    return Scaffold(
+      body: FutureBuilder(
+        future: fetchDatawithImages(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            // print(snapshot.data.body);
+            var data = snapshot.data!;
+            Provider.of<PropertyDetailsProvider>(context, listen: false)
+                .addPropertiesFromApi(data.properties);
+            Provider.of<PropertyDetailsProvider>(context, listen: false)
+                .addImagesFromApi(data.images);
+
+            // print(Provider.of<PropertyDetailsProvider>(context).images);
+
+            return BodyPropertyList(data.properties);
+          }
+        },
+      ),
+    );
   }
 }
 
@@ -56,7 +88,9 @@ class SidebarButton extends StatelessWidget {
 }
 
 class BodyPropertyList extends StatefulWidget {
-  const BodyPropertyList({
+  final List<Map<String, dynamic>> list;
+  const BodyPropertyList(
+    this.list, {
     super.key,
   });
 
@@ -65,6 +99,10 @@ class BodyPropertyList extends StatefulWidget {
 }
 
 class _BodyPropertyListState extends State<BodyPropertyList> {
+  void refreshPage() {
+    setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
@@ -97,10 +135,10 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
               child: TextField(
                 decoration: InputDecoration(
                   enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                      borderRadius: BorderRadius.all(Radius.circular(5)),
                       borderSide: BorderSide(color: Colors.black, width: 2)),
                   focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                      borderRadius: BorderRadius.all(Radius.circular(5)),
                       borderSide: BorderSide(color: Colors.black, width: 2)),
                   focusColor: Colors.black,
                   prefixIcon: Icon(Icons.search),
@@ -115,15 +153,16 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
                   style: ButtonStyle(
                     fixedSize: WidgetStatePropertyAll(Size(58, 58)),
                     shape: WidgetStatePropertyAll(RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10)))),
+                        borderRadius: BorderRadius.all(Radius.circular(5)))),
                     backgroundColor: WidgetStatePropertyAll(
                         const Color.fromARGB(218, 12, 12, 12)),
                   ),
-                  onPressed: () {
-                    Navigator.of(context)
-                        .push(MaterialPageRoute(builder: (context) {
-                      return PropertyFilterPage();
-                    }));
+                  onPressed: () async {
+                    await fetchImage(1);
+                    // Navigator.of(context)
+                    // .push(MaterialPageRoute(builder: (context) {
+                    // return PropertyFilterPage();
+                    // }));
                   },
                   child: Icon(
                     Icons.tune,
@@ -144,16 +183,19 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
         ),
         Categories(),
         Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Column(
-              children: [
-                PropertyCard(image: 'housepic.jpg'),
-                PropertyCard(image: 'housepic3.jpeg'),
-                PropertyCard(image: 'housepic2.jpeg'),
-              ],
-            ),
-          ),
+          child: ListView.builder(
+              itemCount: widget.list.length,
+              itemBuilder: (context, index) {
+                return PropertyCard(
+                  index: index,
+                  propertyId: widget.list[index]['property_id'],
+                  price: widget.list[index]['price'],
+                  area: widget.list[index]['area'],
+                  numBed: widget.list[index]['bedrooms'],
+                  propertyName: widget.list[index]['name'],
+                  onRefresh: refreshPage,
+                );
+              }),
         )
       ],
     );
@@ -194,16 +236,31 @@ class Categories extends StatelessWidget {
 }
 
 class PropertyCard extends StatelessWidget {
-  final String image;
-  const PropertyCard({super.key, required this.image});
+  final int index;
+  final int propertyId;
+  final String propertyName;
+  final String numBed;
+  final String area;
+  final String price;
+  final VoidCallback onRefresh;
+  const PropertyCard(
+      {super.key,
+      required this.index,
+      required this.propertyId,
+      required this.price,
+      required this.area,
+      required this.numBed,
+      required this.propertyName,
+      required this.onRefresh});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-          return PropertyDetailsPage();
+      onTap: () async {
+        await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+          return PropertyDetailsPage(index);
         }));
+        onRefresh();
       },
       child: Container(
         decoration: BoxDecoration(),
@@ -211,8 +268,8 @@ class PropertyCard extends StatelessWidget {
         // borderRadius: BorderRadius.circular(20),
         child: Card(
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-              side: BorderSide(color: Colors.black, width: 0.1)),
+              borderRadius: BorderRadius.circular(5),
+              side: BorderSide(color: Colors.black, width: 01)),
           surfaceTintColor: Colors.white70,
 
           margin: EdgeInsets.all(10),
@@ -226,16 +283,22 @@ class PropertyCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Image.asset(
-                    'assets/images/$image',
-                  ),
-                ),
-              ),
+                  child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Image.network(Provider.of<PropertyDetailsProvider>(
+                                  context,
+                                  listen: false)
+                              .images[Provider.of<PropertyDetailsProvider>(
+                                  context,
+                                  listen: false)
+                              .list[index]['property_id']]?[0] ??
+                          '')
+
+                      // child: Image.network(image)
+                      )),
               Text(
-                'Shanti Nivaas',
+                propertyName,
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               Padding(
@@ -246,19 +309,19 @@ class PropertyCard extends StatelessWidget {
                     Row(
                       children: [
                         Icon(Icons.bed),
-                        Text('3 bedroom'),
+                        Text(numBed),
                       ],
                     ),
                     Row(
                       children: [
                         Icon(Icons.pin_drop),
-                        Text('Locality'),
+                        Text(area),
                       ],
                     ),
                     Row(
                       children: [
                         Icon(Icons.currency_rupee),
-                        Text('46,00,000'),
+                        Text(price),
                       ],
                     ),
                   ],
@@ -270,6 +333,63 @@ class PropertyCard extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<({List<Map<String, dynamic>> properties, Map<int, List<String>> images})>
+    fetchDatawithImages() async {
+  Map<int, List<String>> images = {};
+  List<Map<String, dynamic>> properties = await fetchData();
+  // print(properties);
+  for (Map<String, dynamic> map in properties) {
+    if (images[map['property_id']] == null) {
+      images[map['property_id']] = [];
+    }
+
+    // print(images);
+    String image = await fetchImage(map['property_id']);
+    images[map['property_id']]!.add(image);
+  }
+
+  return (properties: properties, images: images);
+}
+
+Future<List<Map<String, dynamic>>> fetchData() async {
+  final url =
+      Uri.parse('https://real-estate-flask-api.onrender.com/search_properties');
+
+  final response = await http.get(url);
+
+  if (response.statusCode == 200) {
+    var data = jsonDecode(response.body);
+    if (data is List) {
+      return List<Map<String, dynamic>>.from(data);
+    } else {
+      throw Exception('Expected a list but got something else');
+    }
+  } else {
+    throw Exception('Error: ${response.statusCode}');
+  }
+}
+
+Future fetchImage(int propertyId) async {
+  final url = Uri.parse(
+      'https://real-estate-flask-api.onrender.com/get_property_images?property_id=$propertyId');
+
+  final response = await http.get(url);
+  if (response.statusCode == 200) {
+    var data = jsonDecode(response.body);
+    // print('Response Data: $data');
+
+    for (Map<String, dynamic> map in data) {
+      if (map['is_primary'] == 'Yes') {
+        // print(map);
+        return map['image_url'];
+      }
+    }
+  } else {
+    // print('Error: ${response.statusCode}');
+  }
+  return response;
 }
 
 class CategoryChip extends StatefulWidget {
@@ -298,7 +418,7 @@ class _CategoryChipState extends State<CategoryChip> {
           backgroundColor: color,
           elevation: 10,
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all((Radius.circular(14)))),
+              borderRadius: BorderRadius.all((Radius.circular(5)))),
           label: Text(
             widget.label,
             style: TextStyle(

@@ -1,10 +1,20 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:real_estate_management_system/pages/home_page.dart';
 import 'package:real_estate_management_system/pages/property_listing_page.dart';
 import 'registeration_page.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +36,9 @@ class LoginPage extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 70),
               ),
               const Spacer(flex: 2),
-              _buildTextField(Icons.phone, 'Phone number'),
-              _buildTextField(Icons.password, 'Password', obscureText: true),
+              _buildTextField(Icons.mail, 'Email', emailController),
+              _buildTextField(Icons.password, 'Password', passwordController,
+                  obscureText: true),
               _buildLoginButton(context),
               const SizedBox(height: 10),
               GestureDetector(
@@ -55,13 +66,25 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(IconData icon, String hint,
+  Future<void> login() async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+    } on FirebaseAuthException catch (e) {
+      print(e.message);
+    }
+  }
+
+  Widget _buildTextField(IconData icon, String hint, TextEditingController t,
       {bool obscureText = false}) {
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: SizedBox(
         width: 300,
         child: TextField(
+          controller: t,
           obscureText: obscureText,
           decoration: InputDecoration(
             filled: true,
@@ -91,9 +114,8 @@ class LoginPage extends StatelessWidget {
           backgroundColor: const WidgetStatePropertyAll(Colors.black),
           fixedSize: const WidgetStatePropertyAll(Size(300, 50)),
         ),
-        onPressed: () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => HomePage()));
+        onPressed: () async {
+          login();
         },
         child: const Text(
           'Login',

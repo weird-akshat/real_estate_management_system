@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "158850493471",
+    "project_id": "real-estate-management-s-223a2",
+    "storage_bucket": "real-estate-management-s-223a2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:158850493471:android:4e91219dfff68956b2392a",
+        "android_client_info": {
+          "package_name": "com.example.real_estate_management_system"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCMf0de15CjsJHeZ5qEXgG9H2R6pMVuYZo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

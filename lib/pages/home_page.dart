@@ -1,9 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:real_estate_management_system/pages/add_property_page.dart';
 import 'package:real_estate_management_system/pages/favorites_page.dart';
 import 'package:real_estate_management_system/pages/owned_property_page.dart';
 import 'package:real_estate_management_system/pages/profile_page.dart';
 import 'package:real_estate_management_system/pages/property_listing_page.dart';
+import 'package:real_estate_management_system/pages/propertyid_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,7 +23,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    currentBody = BodyPropertyList();
+    currentBody = PropertyListingPage();
     appBarHeading = "Properties";
     x = 0;
   }
@@ -32,7 +36,7 @@ class _HomePageState extends State<HomePage> {
             x = index;
             if (index == 0) {
               setState(() {
-                currentBody = BodyPropertyList();
+                currentBody = PropertyListingPage();
                 appBarHeading = "Properties";
               });
             } else {
@@ -65,9 +69,10 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               label: "",
-            )
+            ),
           ]),
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
         title: Text(
           appBarHeading,
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -139,7 +144,9 @@ class _HomePageState extends State<HomePage> {
           SidebarButton(
             Icons.business,
             'Sell Property',
-            AddPropertyPage(),
+            ChangeNotifierProvider(
+                create: (context) => PropertyidProvider(),
+                child: AddPropertyPage()),
             onTap: () {
               Navigator.pop(context);
 
@@ -168,12 +175,16 @@ class _HomePageState extends State<HomePage> {
               }
             },
           ),
+          Spacer(),
+          SidebarButton(Icons.logout, 'LogOut', widget, onTap: () async {
+            FirebaseAuth.instance.signOut();
+          })
         ],
       )),
       body: Stack(children: [
         Positioned.fill(
           child: Image.asset(
-            'assets/images/loginbackground.jpg',
+            'assets/images/background.jpg',
             fit: BoxFit.cover,
           ),
         ),

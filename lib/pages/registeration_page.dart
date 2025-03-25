@@ -1,7 +1,22 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
-class RegistrationPage extends StatelessWidget {
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
+
+  @override
+  State<RegistrationPage> createState() => _RegistrationPageState();
+}
+
+class _RegistrationPageState extends State<RegistrationPage> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final nameController = TextEditingController();
+  final phoneController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -24,13 +39,11 @@ class RegistrationPage extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 50),
                 ),
                 const Spacer(),
-                _buildTextField(Icons.person, 'Full Name'),
-                _buildTextField(Icons.location_city, 'City'),
-                _buildTextField(Icons.location_on, 'State'),
-                _buildTextField(Icons.map, 'Country'),
-                _buildTextField(Icons.numbers, 'ZIP Code'),
-                _buildTextField(Icons.phone, 'Phone Number'),
-                _buildTextField(Icons.password, 'Password', obscureText: true),
+                _buildTextField(Icons.person, 'Full Name', nameController),
+                _buildTextField(Icons.phone, 'Phone Number', phoneController),
+                _buildTextField(Icons.mail, 'Email', emailController),
+                _buildTextField(Icons.password, 'Password', passwordController,
+                    obscureText: true),
                 _buildRegisterButton(),
                 const Spacer(flex: 2),
               ],
@@ -41,13 +54,20 @@ class RegistrationPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(IconData icon, String hint,
+  Future<void> createUser() async {
+    await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim());
+  }
+
+  Widget _buildTextField(IconData icon, String hint, TextEditingController t,
       {bool obscureText = false}) {
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: SizedBox(
         width: 300,
         child: TextField(
+          controller: t,
           obscureText: obscureText,
           decoration: InputDecoration(
             filled: true,
@@ -66,6 +86,33 @@ class RegistrationPage extends StatelessWidget {
     );
   }
 
+  Future<void> addUserToDataBase() async {
+    final url =
+        Uri.parse('https://real-estate-flask-api.onrender.com/create_user');
+
+    Map<String, dynamic> data = {
+      "user_id": FirebaseAuth.instance.currentUser?.uid,
+      "name": nameController.text.trim(),
+      "email": emailController.text.trim(),
+      "phone": phoneController.text.trim(),
+    };
+    print("Sending Data: ${jsonEncode(data)}"); // Debugging
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: jsonEncode(data),
+    );
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      print("Success: ${response.body}");
+    } else {
+      print("Error: ${response.statusCode} - ${response.body}");
+    }
+  }
+
   Widget _buildRegisterButton() {
     return Padding(
       padding: const EdgeInsets.all(4.0),
@@ -77,7 +124,12 @@ class RegistrationPage extends StatelessWidget {
           backgroundColor: const WidgetStatePropertyAll(Colors.black),
           fixedSize: const WidgetStatePropertyAll(Size(300, 50)),
         ),
-        onPressed: () {},
+        onPressed: () async {
+          await createUser();
+          await FirebaseAuth.instance.currentUser?.reload(); // Force update
+
+          await addUserToDataBase();
+        },
         child: const Text(
           'Register',
           style: TextStyle(color: Colors.white),
