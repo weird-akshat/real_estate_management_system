@@ -8,6 +8,7 @@ class FavoriteProvider extends ChangeNotifier {
   void addPropertiesFromApi(List<Map<String, dynamic>> list) {
     this.list = list;
     // print(list);
+    // print(images);
     notifyListeners();
   }
 

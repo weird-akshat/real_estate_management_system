@@ -13,6 +13,7 @@ class RegistrationPage extends StatefulWidget {
 }
 
 class _RegistrationPageState extends State<RegistrationPage> {
+  bool buttonClicked = false;
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final nameController = TextEditingController();
@@ -31,23 +32,29 @@ class _RegistrationPageState extends State<RegistrationPage> {
             ),
           ),
           Center(
-            child: Column(
-              children: [
-                const Spacer(flex: 2),
-                const Text(
-                  'Register',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 50),
-                ),
-                const Spacer(),
-                _buildTextField(Icons.person, 'Full Name', nameController),
-                _buildTextField(Icons.phone, 'Phone Number', phoneController),
-                _buildTextField(Icons.mail, 'Email', emailController),
-                _buildTextField(Icons.password, 'Password', passwordController,
-                    obscureText: true),
-                _buildRegisterButton(),
-                const Spacer(flex: 2),
-              ],
-            ),
+            child: !buttonClicked
+                ? Column(
+                    children: [
+                      const Spacer(flex: 2),
+                      const Text(
+                        'Register',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 50),
+                      ),
+                      const Spacer(),
+                      _buildTextField(
+                          Icons.person, 'Full Name', nameController),
+                      _buildTextField(
+                          Icons.phone, 'Phone Number', phoneController),
+                      _buildTextField(Icons.mail, 'Email', emailController),
+                      _buildTextField(
+                          Icons.password, 'Password', passwordController,
+                          obscureText: true),
+                      _buildRegisterButton(),
+                      const Spacer(flex: 2),
+                    ],
+                  )
+                : CircularProgressIndicator(),
           ),
         ],
       ),
@@ -124,12 +131,27 @@ class _RegistrationPageState extends State<RegistrationPage> {
           backgroundColor: const WidgetStatePropertyAll(Colors.black),
           fixedSize: const WidgetStatePropertyAll(Size(300, 50)),
         ),
-        onPressed: () async {
-          await createUser();
-          await FirebaseAuth.instance.currentUser?.reload(); // Force update
+        onPressed: buttonClicked
+            ? null
+            : () async {
+                setState(() {
+                  buttonClicked = true;
+                });
 
-          await addUserToDataBase();
-        },
+                try {
+                  await createUser();
+                  await FirebaseAuth.instance.currentUser
+                      ?.reload(); // Force update
+
+                  await addUserToDataBase();
+
+                  Navigator.of(context).pop();
+                } finally {
+                  setState(() {
+                    buttonClicked = false;
+                  });
+                }
+              },
         child: const Text(
           'Register',
           style: TextStyle(color: Colors.white),

@@ -48,6 +48,7 @@ class _LoginPageState extends State<LoginPage> {
                     MaterialPageRoute(
                         builder: (context) => const RegistrationPage()),
                   );
+                  setState(() {});
                 },
                 child: const Text(
                   'Don\'t have an account? Register',

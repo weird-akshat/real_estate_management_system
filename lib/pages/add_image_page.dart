@@ -18,6 +18,7 @@ class AddImagePage extends StatefulWidget {
 }
 
 class _AddImagePageState extends State<AddImagePage> {
+  bool isClikced = false;
   void _updateState() {
     setState(() {}); // This will refresh the page when images are added/removed
   }
@@ -27,43 +28,53 @@ class _AddImagePageState extends State<AddImagePage> {
   @override
   Widget build(BuildContext context) {
     print(Provider.of<PropertyidProvider>(context).propertyId);
-    return Scaffold(
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'Add Images',
-              style: TextStyle(
-                fontSize: 50,
-              ),
-            ),
-          ),
-          Expanded(
-            child: GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3),
-                itemCount: list.length + 1,
-                itemBuilder: (context, index) {
-                  return BuildImageButton(list, _updateState);
-                }),
-          ),
-          TextButton(
-            onPressed: () async {
-              for (File i in list) {
-                await uploadImage(i);
-              }
+    return isClikced
+        ? CircularProgressIndicator()
+        : Scaffold(
+            body: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    'Add Images',
+                    style: TextStyle(
+                      fontSize: 50,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GridView.builder(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3),
+                      itemCount: list.length + 1,
+                      itemBuilder: (context, index) {
+                        return BuildImageButton(list, _updateState);
+                      }),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    setState(() {
+                      isClikced = true;
+                    });
+                    try {
+                      for (File i in list) {
+                        await uploadImage(i);
+                      }
 
-              Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (context) => HomePage()));
-            },
-            style: ButtonStyle(
-                backgroundColor: WidgetStatePropertyAll(Colors.black)),
-            child: Text('Submit'),
-          )
-        ],
-      ),
-    );
+                      Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => HomePage()));
+                    } finally {
+                      isClikced = false;
+                      setState(() {});
+                    }
+                  },
+                  style: ButtonStyle(
+                      backgroundColor: WidgetStatePropertyAll(Colors.black)),
+                  child: Text('Submit'),
+                )
+              ],
+            ),
+          );
   }
 
   Future<void> uploadImage(File i) async {

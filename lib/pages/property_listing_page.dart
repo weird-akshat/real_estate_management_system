@@ -158,11 +158,10 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
                         const Color.fromARGB(218, 12, 12, 12)),
                   ),
                   onPressed: () async {
-                    await fetchImage(1);
-                    // Navigator.of(context)
-                    // .push(MaterialPageRoute(builder: (context) {
-                    // return PropertyFilterPage();
-                    // }));
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return PropertyFilterPage();
+                    }));
                   },
                   child: Icon(
                     Icons.tune,

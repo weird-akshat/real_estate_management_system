@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:real_estate_management_system/pages/favorite_body_property_list.dart';
 import 'package:real_estate_management_system/pages/favorite_provider.dart';
 import 'property_listing_page.dart';
 import 'package:http/http.dart' as http;
@@ -30,8 +31,8 @@ class FavoritesPage extends StatelessWidget {
                 .addImagesFromApi(data.images);
 
             // print(Provider.of<PropertyDetailsProvider>(context).images);
-
-            return BodyPropertyList(data.properties);
+            // return Text('data');
+            return FavoriteBodyPropertyList(data.properties);
           }
         },
       ),

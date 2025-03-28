@@ -11,6 +11,8 @@ import 'package:real_estate_management_system/pages/favorites_page.dart';
 import 'package:real_estate_management_system/pages/filter_page.dart';
 import 'package:real_estate_management_system/pages/home_page.dart';
 import 'package:real_estate_management_system/pages/login_page.dart';
+import 'package:real_estate_management_system/pages/negotiation_chat.dart';
+import 'package:real_estate_management_system/pages/owned_properties_provider.dart';
 import 'package:real_estate_management_system/pages/owned_property_page.dart';
 import 'package:real_estate_management_system/pages/profile_page.dart';
 import 'package:real_estate_management_system/pages/property_details.dart';
@@ -37,29 +39,34 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => PropertyidProvider()),
         ChangeNotifierProvider(create: (context) => PropertyDetailsProvider()),
-        ChangeNotifierProvider(create: (context) => FavoriteProvider())
+        ChangeNotifierProvider(create: (context) => FavoriteProvider()),
+        ChangeNotifierProvider(create: (context) => OwnedPropertiesProvider())
         // ChangeNotifierProvider(create: (context) => ImageProvider())
       ],
       child: MaterialApp(
-          // home: AddImagePage(),
-          home: StreamBuilder(
-              stream: FirebaseAuth.instance.userChanges(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
+        // home: NegotiationChat(
+        //   buyerId: "21",
+        //   propertyId: 5,
+        // ),
+        home: StreamBuilder(
+            stream: FirebaseAuth.instance.userChanges(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
 
-                if (snapshot.data != null) {
-                  return const HomePage();
-                }
-                return const LoginPage();
-              }),
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            textTheme: GoogleFonts.gentiumPlusTextTheme(),
-          )),
+              if (snapshot.data != null) {
+                return const HomePage();
+              }
+              return const LoginPage();
+            }),
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          textTheme: GoogleFonts.gentiumPlusTextTheme(),
+        ),
+      ),
     );
   }
 }

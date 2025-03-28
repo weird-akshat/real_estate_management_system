@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:real_estate_management_system/pages/owned_properties_provider.dart';
-import 'package:real_estate_management_system/pages/owned_property_details_page.dart';
-import 'package:real_estate_management_system/pages/property_details.dart';
+
+import 'package:real_estate_management_system/pages/favorites_property_details.dart';
 import 'package:real_estate_management_system/property_details_provider.dart';
 
-class OwnedPropertyCard extends StatelessWidget {
+class FavoriteBodyPropertyCard extends StatelessWidget {
   final int index;
   final int propertyId;
   final String propertyName;
@@ -13,7 +12,7 @@ class OwnedPropertyCard extends StatelessWidget {
   final String area;
   final String price;
   final VoidCallback onRefresh;
-  const OwnedPropertyCard(
+  const FavoriteBodyPropertyCard(
       {super.key,
       required this.index,
       required this.propertyId,
@@ -25,10 +24,14 @@ class OwnedPropertyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // print('hey');
+    // print(Provider.of<FavoriteProvider>(context, listen: false)
+    //     .images[propertyId]);
+    // print('hey2');
     return GestureDetector(
       onTap: () async {
         await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-          return OwnedPropertyDetailsPage(index);
+          return FavoritesPropertyDetails(index);
         }));
         onRefresh();
       },
@@ -56,13 +59,10 @@ class OwnedPropertyCard extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Image.network(Provider.of<OwnedPropertiesProvider>(
+                      child: Image.network(Provider.of<PropertyDetailsProvider>(
                                   context,
                                   listen: false)
-                              .images[Provider.of<OwnedPropertiesProvider>(
-                                  context,
-                                  listen: false)
-                              .properties[index]['property_id']]?[0] ??
+                              .images[propertyId]?[0] ??
                           '')
 
                       // child: Image.network(image)

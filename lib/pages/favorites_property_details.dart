@@ -9,35 +9,22 @@ import 'package:real_estate_management_system/pages/negotiation_chat.dart';
 import 'package:real_estate_management_system/property_details_provider.dart';
 import 'package:http/http.dart' as http;
 
-class PropertyDetailsPage extends StatefulWidget {
+class FavoritesPropertyDetails extends StatefulWidget {
   final int index;
-  const PropertyDetailsPage(this.index, {super.key});
+  const FavoritesPropertyDetails(this.index, {super.key});
 
   @override
-  State<PropertyDetailsPage> createState() => _PropertyDetailsPageState();
+  State<FavoritesPropertyDetails> createState() =>
+      _FavoritesPropertyDetailsPageState();
 }
 
-class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
-  bool isFavorite = false;
+class _FavoritesPropertyDetailsPageState
+    extends State<FavoritesPropertyDetails> {
+  bool isFavorite = true;
   // @override
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      var properties =
-          Provider.of<PropertyDetailsProvider>(context, listen: false);
-      var favourites = Provider.of<FavoriteProvider>(context, listen: false);
-
-      for (Map<String, dynamic> map in favourites.list) {
-        if (properties.list[widget.index]['property_id'] ==
-            map['property_id']) {
-          setState(() {
-            isFavorite = true;
-          });
-          break;
-        }
-      }
-    });
   }
 
   @override
@@ -49,8 +36,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     // Responsive text scaling
     final textScaleFactor = MediaQuery.of(context).textScaleFactor;
 
-    final provider =
-        Provider.of<PropertyDetailsProvider>(context, listen: false);
+    final provider = Provider.of<FavoriteProvider>(context, listen: false);
     final propertyId =
         (provider.list.isNotEmpty && widget.index < provider.list.length)
             ? provider.list[widget.index]['property_id'] as int?
@@ -211,8 +197,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     );
   }
 
-  Future<void> removeFavorite(
-      PropertyDetailsProvider provider, int index) async {
+  Future<void> removeFavorite(FavoriteProvider provider, int index) async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     final propertyId = provider.list[index]['property_id'];
 
@@ -336,16 +321,16 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                     : ElevatedButton(
                         onPressed: () async {
                           await removeFavorite(
-                              Provider.of<PropertyDetailsProvider>(context,
+                              Provider.of<FavoriteProvider>(context,
                                   listen: false),
                               widget.index);
                           isFavorite = false;
                           Provider.of<FavoriteProvider>(context, listen: false)
                               .removePropertyFromApi(
-                                  Provider.of<PropertyDetailsProvider>(context,
+                                  Provider.of<FavoriteProvider>(context,
                                           listen: false)
                                       .list[widget.index]['property_id']);
-                          setState(() {});
+                          Navigator.of(context).pop();
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Color(0xff4a90e2),
@@ -379,8 +364,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   }
 
   void _showMakeOfferDialog() {
-    final provider =
-        Provider.of<PropertyDetailsProvider>(context, listen: false);
+    final provider = Provider.of<FavoriteProvider>(context, listen: false);
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -402,7 +386,6 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
               "made_by": "buyer",
             };
             await makeOffer(newOffer);
-
             // Add the new offer to the list
             setState(() {
               // list.add(newOffer);
