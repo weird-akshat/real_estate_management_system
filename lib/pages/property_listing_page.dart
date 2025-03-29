@@ -159,10 +159,12 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
                         const Color.fromARGB(218, 12, 12, 12)),
                   ),
                   onPressed: () async {
-                    Navigator.of(context)
+                    await Navigator.of(context)
                         .push(MaterialPageRoute(builder: (context) {
-                      return PropertyFilterPage();
+                      return FilterPage();
                     }));
+
+                    setState(() {});
                   },
                   child: Icon(
                     Icons.tune,
@@ -171,17 +173,6 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
             )
           ],
         ),
-        Padding(
-          padding: const EdgeInsets.all(5.0),
-          child: Text(
-            'Categories',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
-          ),
-        ),
-        Categories(),
         Expanded(
           child: ListView.builder(
               itemCount: widget.list.length,
@@ -191,7 +182,7 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
                   return PropertyCard(
                     index: index,
                     propertyId: widget.list[index]['property_id'],
-                    price: widget.list[index]['price'],
+                    price: widget.list[index]['price'].toString(),
                     area: widget.list[index]['area'],
                     numBed: widget.list[index]['bedrooms'],
                     propertyName: widget.list[index]['name'],

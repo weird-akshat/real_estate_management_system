@@ -10,7 +10,7 @@ class FavoriteBodyPropertyCard extends StatelessWidget {
   final String propertyName;
   final String numBed;
   final String area;
-  final String price;
+  final double price;
   final VoidCallback onRefresh;
   const FavoriteBodyPropertyCard(
       {super.key,
@@ -91,7 +91,7 @@ class FavoriteBodyPropertyCard extends StatelessWidget {
                     Row(
                       children: [
                         Icon(Icons.currency_rupee),
-                        Text(price),
+                        Text(price.toString()),
                       ],
                     ),
                   ],

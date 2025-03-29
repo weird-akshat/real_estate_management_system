@@ -160,7 +160,7 @@ class _OwnedPropertyDetailsPageState extends State<OwnedPropertyDetailsPage> {
                           ),
                           SizedBox(height: 8),
                           Text(
-                            list['price'],
+                            list['price'].toString(),
                             style: TextStyle(
                                 fontSize: 25 * textScaleFactor,
                                 fontWeight: FontWeight.bold),
@@ -337,7 +337,8 @@ class _OwnedPropertyDetailsPageState extends State<OwnedPropertyDetailsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildIconText(Icons.house, list['property_type'], textSize),
-            _buildIconText(Icons.price_change, list['price'], textSize),
+            _buildIconText(
+                Icons.price_change, list['price'].toString(), textSize),
             _buildIconText(Icons.location_city, list['city'], textSize),
           ],
         ),

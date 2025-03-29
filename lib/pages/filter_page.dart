@@ -1,609 +1,242 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
-class PropertyFilterPage extends StatefulWidget {
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:real_estate_management_system/pages/property_details.dart';
+import 'package:real_estate_management_system/property_details_provider.dart';
+
+class FilterPage extends StatefulWidget {
+  const FilterPage({super.key});
+
   @override
-  _PropertyFilterPageState createState() => _PropertyFilterPageState();
+  State<FilterPage> createState() => _FilterPageState();
 }
 
-class _PropertyFilterPageState extends State<PropertyFilterPage> {
-  // Filter state variables
-  RangeValues _priceRange = RangeValues(100000, 1000000);
-  List<String> _propertyTypes = [
-    'House',
-    'Apartment',
-    'Condo',
-    'Townhouse',
-    'Land'
-  ];
-  List<String> _selectedPropertyTypes = ['House', 'Apartment'];
-  RangeValues _areaRange = RangeValues(500, 5000);
-  int _bedrooms = 2;
-  int _bathrooms = 2;
-  List<String> _amenities = [
-    'Swimming Pool',
-    'Garden',
-    'Garage',
-    'Balcony',
-    'Gym',
-    'Security',
-    'Elevator',
-    'Parking'
-  ];
-  List<String> _selectedAmenities = ['Parking', 'Balcony'];
-  String _sortBy = 'Price (Low to High)';
-  bool _onlyShowWithPhotos = true;
-  bool _onlyShowVerified = false;
+class _FilterPageState extends State<FilterPage> {
+  final areaController = TextEditingController();
+  final cityController = TextEditingController();
+  final stateController = TextEditingController();
+  final minpriceController = TextEditingController();
+  final maxpriceController = TextEditingController();
+  final bedController = TextEditingController();
+  final bathController = TextEditingController();
+  final balconyController = TextEditingController();
+  final parkingController = TextEditingController();
+//     city = request.args.get('city')
+//     state = request.args.get('state')
+//     min_price = request.args.get('min_price', type=int)
+//     max_price = request.args.get('max_price', type=int)
+//     bedrooms = request.args.get('bedrooms', type=int)
+//     area= request.args.get('area')
+//     bathrooms= request.args.get('bathrooms', type=int)
+//     parking= request.args.get('parking', type=int)
+//     balcony= request.args.get('balcony', type=int)
+  Future<List<Map<String, dynamic>>> getProperties() async {
+    final queryParams = {
+      'city': cityController.text.trim(),
+      'area': areaController.text.trim(),
+      'state': stateController.text.trim(),
+      'min_price': minpriceController.text.trim(),
+      'max_price': maxpriceController.text.trim(),
+      'bedrooms': bedController.text.trim(),
+      'bathrooms': bathController.text.trim(),
+      'parking': parkingController.text.trim(),
+      'balcony': balconyController.text.trim(),
+    }..removeWhere((key, value) => value.isEmpty);
+
+    final url = Uri.https('real-estate-flask-api.onrender.com',
+        '/search_properties', queryParams);
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      print(response.body);
+      return List<Map<String, dynamic>>.from(jsonDecode(response.body));
+    } else {
+      print('Error fetching properties');
+      return [];
+    }
+  }
+
+  Future<
+      ({
+        List<Map<String, dynamic>> properties,
+        Map<int, List<String>> images
+      })> fetchDatawithImages() async {
+    Map<int, List<String>> images = {};
+    List<Map<String, dynamic>> properties = await getProperties();
+
+    // Fetch all images asynchronously
+    await Future.wait(properties.map((property) async {
+      String image = await fetchImage(property['property_id']);
+      images[property['property_id']] = [image];
+    }));
+
+    if (!mounted) return (properties: properties, images: images);
+    if (properties.length != 0) {
+      Provider.of<PropertyDetailsProvider>(context, listen: false)
+          .addPropertiesFromApi(properties);
+      Provider.of<PropertyDetailsProvider>(context, listen: false)
+          .addImagesFromApi(images);
+    }
+
+    return (properties: properties, images: images);
+  }
+
+  Future<String> fetchImage(int propertyId) async {
+    final url = Uri.parse(
+        'https://real-estate-flask-api.onrender.com/get_property_images?property_id=$propertyId');
+
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      for (var map in data) {
+        if (map['is_primary'] == 'Yes') {
+          return map['image_url'];
+        }
+      }
+    }
+    return '';
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        title: Text(
-          'Filters',
-          style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        leading: IconButton(
-          icon: Icon(Icons.close, color: Colors.black87),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              // Reset all filters to default
-              setState(() {
-                _priceRange = RangeValues(100000, 1000000);
-                _selectedPropertyTypes = ['House', 'Apartment'];
-                _areaRange = RangeValues(500, 5000);
-                _bedrooms = 2;
-                _bathrooms = 2;
-                _selectedAmenities = ['Parking', 'Balcony'];
-                _sortBy = 'Price (Low to High)';
-                _onlyShowWithPhotos = true;
-                _onlyShowVerified = false;
-              });
-            },
-            child: Text(
-              'Reset',
-              style: TextStyle(
-                color: Colors.red,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildPriceRangeFilter(),
-            _buildDivider(),
-            _buildPropertyTypeFilter(),
-            _buildDivider(),
-            _buildAreaFilter(),
-            _buildDivider(),
-            _buildRoomsFilter(),
-            _buildDivider(),
-            _buildAmenitiesFilter(),
-            _buildDivider(),
-            _buildSortByFilter(),
-            _buildDivider(),
-            _buildAdditionalOptions(),
-            SizedBox(height: 100), // Space for bottom button
-          ],
-        ),
-      ),
-      bottomSheet: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: Offset(0, -5),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
+    return SafeArea(
+      child: Scaffold(
+        body: Center(
+          child: LayoutBuilder(
+            builder: (context, constraits) => SingleChildScrollView(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      'Cancel',
+                      'Filters',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 28,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.blue),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                  FilterCards(
+                    icon: Icons.place,
+                    t: areaController,
+                    string: 'Area',
                   ),
-                ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Apply filters and return to search results
-                    Navigator.pop(context);
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Text(
-                      'Apply',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                  FilterCards(
+                    icon: Icons.location_city,
+                    t: cityController,
+                    string: 'City',
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                  FilterCards(
+                    icon: Icons.map,
+                    t: stateController,
+                    string: 'State',
                   ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDivider() {
-    return Divider(
-      thickness: 1,
-      color: Colors.grey[200],
-      height: 1,
-    );
-  }
-
-  Widget _buildPriceRangeFilter() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle('Price Range'),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '\$${_priceRange.start.toInt().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Text(
-                '\$${_priceRange.end.toInt().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-        RangeSlider(
-          values: _priceRange,
-          min: 0,
-          max: 2000000,
-          divisions: 20,
-          activeColor: Colors.blue,
-          inactiveColor: Colors.grey[300],
-          labels: RangeLabels(
-            '\$${_priceRange.start.toInt().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
-            '\$${_priceRange.end.toInt().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
-          ),
-          onChanged: (RangeValues values) {
-            setState(() {
-              _priceRange = values;
-            });
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPropertyTypeFilter() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle('Property Type'),
-        Container(
-          height: 50,
-          child: ListView(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            scrollDirection: Axis.horizontal,
-            children: _propertyTypes.map((type) {
-              final isSelected = _selectedPropertyTypes.contains(type);
-              return Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: FilterChip(
-                  label: Text(type),
-                  selected: isSelected,
-                  onSelected: (bool selected) {
-                    setState(() {
-                      if (selected) {
-                        _selectedPropertyTypes.add(type);
+                  FilterCards(
+                    icon: Icons.currency_rupee,
+                    t: minpriceController,
+                    string: 'Minimum Price',
+                  ),
+                  FilterCards(
+                    icon: Icons.currency_rupee_outlined,
+                    t: maxpriceController,
+                    string: 'Maximum Price',
+                  ),
+                  FilterCards(
+                    icon: Icons.bed,
+                    t: bedController,
+                    string: 'Bedrooms',
+                  ),
+                  FilterCards(
+                    icon: Icons.bathroom,
+                    t: bathController,
+                    string: 'Bathrooms',
+                  ),
+                  FilterCards(
+                    icon: Icons.balcony,
+                    t: balconyController,
+                    string: 'Balcony',
+                  ),
+                  FilterCards(
+                    icon: Icons.local_parking,
+                    t: parkingController,
+                    string: 'Parking',
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      var result = await fetchDatawithImages();
+                      if (result.properties.isNotEmpty) {
+                        if (mounted) Navigator.of(context).pop();
                       } else {
-                        _selectedPropertyTypes.remove(type);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('No properties found')),
+                        );
                       }
-                    });
-                  },
-                  backgroundColor: Colors.white,
-                  selectedColor: Colors.blue[100],
-                  checkmarkColor: Colors.blue,
-                  labelStyle: TextStyle(
-                    color: isSelected ? Colors.blue[800] : Colors.black87,
-                    fontWeight:
-                        isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                    side: BorderSide(
-                      color: isSelected ? Colors.blue : Colors.grey[300]!,
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-        SizedBox(height: 8),
-      ],
-    );
-  }
-
-  Widget _buildAreaFilter() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle('Square Footage'),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${_areaRange.start.toInt()} sq ft',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
+                    },
+                    child: Text('Submit'),
+                  )
+                ],
               ),
-              Text(
-                '${_areaRange.end.toInt()} sq ft',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-        RangeSlider(
-          values: _areaRange,
-          min: 0,
-          max: 10000,
-          divisions: 20,
-          activeColor: Colors.blue,
-          inactiveColor: Colors.grey[300],
-          labels: RangeLabels(
-            '${_areaRange.start.toInt()} sq ft',
-            '${_areaRange.end.toInt()} sq ft',
-          ),
-          onChanged: (RangeValues values) {
-            setState(() {
-              _areaRange = values;
-            });
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRoomsFilter() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle('Rooms'),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Column(
-            children: [
-              // Bedrooms Section
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Bedrooms',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              SizedBox(height: 8),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildNumberButton(
-                      1,
-                      _bedrooms == 1,
-                      () => setState(() => _bedrooms = 1),
-                    ),
-                    _buildNumberButton(
-                      2,
-                      _bedrooms == 2,
-                      () => setState(() => _bedrooms = 2),
-                    ),
-                    _buildNumberButton(
-                      3,
-                      _bedrooms == 3,
-                      () => setState(() => _bedrooms = 3),
-                    ),
-                    _buildNumberButton(
-                      4,
-                      _bedrooms == 4,
-                      () => setState(() => _bedrooms = 4),
-                    ),
-                    _buildNumberButton(
-                      '5+',
-                      _bedrooms >= 5,
-                      () => setState(() => _bedrooms = 5),
-                    ),
-                  ],
-                ),
-              ),
-
-              SizedBox(height: 16),
-
-              // Bathrooms Section
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Bathrooms',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              SizedBox(height: 8),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildNumberButton(
-                      1,
-                      _bathrooms == 1,
-                      () => setState(() => _bathrooms = 1),
-                    ),
-                    _buildNumberButton(
-                      2,
-                      _bathrooms == 2,
-                      () => setState(() => _bathrooms = 2),
-                    ),
-                    _buildNumberButton(
-                      3,
-                      _bathrooms == 3,
-                      () => setState(() => _bathrooms = 3),
-                    ),
-                    _buildNumberButton(
-                      4,
-                      _bathrooms == 4,
-                      () => setState(() => _bathrooms = 4),
-                    ),
-                    _buildNumberButton(
-                      '5+',
-                      _bathrooms >= 5,
-                      () => setState(() => _bathrooms = 5),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNumberButton(
-      dynamic number, bool isSelected, VoidCallback onTap) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(4),
-        child: Container(
-          width: 40,
-          height: 40,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.blue : Colors.white,
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(
-              color: isSelected ? Colors.blue : Colors.grey[300]!,
-            ),
-          ),
-          child: Text(
-            number.toString(),
-            style: TextStyle(
-              color: isSelected ? Colors.white : Colors.black87,
-              fontWeight: FontWeight.bold,
             ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildAmenitiesFilter() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle('Amenities'),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: _amenities.map((amenity) {
-              final isSelected = _selectedAmenities.contains(amenity);
-              return FilterChip(
-                label: Text(amenity),
-                selected: isSelected,
-                onSelected: (bool selected) {
-                  setState(() {
-                    if (selected) {
-                      _selectedAmenities.add(amenity);
-                    } else {
-                      _selectedAmenities.remove(amenity);
-                    }
-                  });
-                },
-                backgroundColor: Colors.white,
-                selectedColor: Colors.blue[100],
-                checkmarkColor: Colors.blue,
-                labelStyle: TextStyle(
-                  color: isSelected ? Colors.blue[800] : Colors.black87,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  side: BorderSide(
-                    color: isSelected ? Colors.blue : Colors.grey[300]!,
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSortByFilter() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle('Sort By'),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: DropdownButtonFormField<String>(
-            value: _sortBy,
-            decoration: InputDecoration(
-              contentPadding:
-                  EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey[300]!),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: Colors.grey[300]!),
-              ),
-            ),
-            onChanged: (String? newValue) {
-              if (newValue != null) {
-                setState(() {
-                  _sortBy = newValue;
-                });
-              }
-            },
-            items: [
-              'Price (Low to High)',
-              'Price (High to Low)',
-              'Newest First',
-              'Oldest First',
-              'Most Popular',
-              'Most Relevant',
-            ].map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-          ),
-        ),
-        SizedBox(height: 16),
-      ],
-    );
-  }
-
-  Widget _buildAdditionalOptions() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle('Additional Options'),
-        SwitchListTile(
-          title: Text(
-            'Only show properties with photos',
-            style: TextStyle(fontSize: 16),
-          ),
-          value: _onlyShowWithPhotos,
-          activeColor: Colors.blue,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16),
-          onChanged: (bool value) {
-            setState(() {
-              _onlyShowWithPhotos = value;
-            });
-          },
-        ),
-        SwitchListTile(
-          title: Text(
-            'Only show verified properties',
-            style: TextStyle(fontSize: 16),
-          ),
-          value: _onlyShowVerified,
-          activeColor: Colors.blue,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16),
-          onChanged: (bool value) {
-            setState(() {
-              _onlyShowVerified = value;
-            });
-          },
-        ),
-      ],
     );
   }
 }
+
+class FilterCards extends StatelessWidget {
+  final IconData icon;
+  final TextEditingController t;
+  final String string;
+  const FilterCards({
+    required this.icon,
+    required this.t,
+    required this.string,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) => Card(
+        elevation: 5,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        child: SizedBox(
+          // height: constraits.maxHeight * .1,
+          width: constraints.maxWidth,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: t,
+                      decoration: InputDecoration(
+                          hintText: string,
+                          // enabledBorder: OutlineInputBorder(),
+                          filled: true,
+                          focusedBorder: OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(color: Colors.black, width: 2)),
+                          border: OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(color: Colors.black, width: 2)),
+                          prefixIcon: Icon(icon)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+// i have these criterias through which we are searching for properties 

@@ -44,60 +44,6 @@ class _FavoriteBodyPropertyListState extends State<FavoriteBodyPropertyList> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              width: 200,
-              child: TextField(
-                decoration: InputDecoration(
-                  enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(5)),
-                      borderSide: BorderSide(color: Colors.black, width: 2)),
-                  focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(5)),
-                      borderSide: BorderSide(color: Colors.black, width: 2)),
-                  focusColor: Colors.black,
-                  prefixIcon: Icon(Icons.search),
-                  border: OutlineInputBorder(),
-                  hintText: 'Location',
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextButton(
-                  style: ButtonStyle(
-                    fixedSize: WidgetStatePropertyAll(Size(58, 58)),
-                    shape: WidgetStatePropertyAll(RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(5)))),
-                    backgroundColor: WidgetStatePropertyAll(
-                        const Color.fromARGB(218, 12, 12, 12)),
-                  ),
-                  onPressed: () async {
-                    Navigator.of(context)
-                        .push(MaterialPageRoute(builder: (context) {
-                      return PropertyFilterPage();
-                    }));
-                  },
-                  child: Icon(
-                    Icons.tune,
-                    color: Colors.white,
-                  )),
-            )
-          ],
-        ),
-        Padding(
-          padding: const EdgeInsets.all(5.0),
-          child: Text(
-            'Categories',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
-          ),
-        ),
-        Categories(),
         Expanded(
           child: ListView.builder(
               itemCount: widget.list.length,
