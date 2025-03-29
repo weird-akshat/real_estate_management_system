@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:real_estate_management_system/pages/filter_page.dart';
@@ -185,15 +186,18 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
           child: ListView.builder(
               itemCount: widget.list.length,
               itemBuilder: (context, index) {
-                return PropertyCard(
-                  index: index,
-                  propertyId: widget.list[index]['property_id'],
-                  price: widget.list[index]['price'],
-                  area: widget.list[index]['area'],
-                  numBed: widget.list[index]['bedrooms'],
-                  propertyName: widget.list[index]['name'],
-                  onRefresh: refreshPage,
-                );
+                if (widget.list[index]['owner_id'] !=
+                    FirebaseAuth.instance.currentUser!.uid) {
+                  return PropertyCard(
+                    index: index,
+                    propertyId: widget.list[index]['property_id'],
+                    price: widget.list[index]['price'],
+                    area: widget.list[index]['area'],
+                    numBed: widget.list[index]['bedrooms'],
+                    propertyName: widget.list[index]['name'],
+                    onRefresh: refreshPage,
+                  );
+                } else {}
               }),
         )
       ],

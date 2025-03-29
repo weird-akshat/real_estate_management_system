@@ -9,6 +9,7 @@ import 'package:real_estate_management_system/pages/owned_property_page.dart';
 import 'package:real_estate_management_system/pages/profile_page.dart';
 import 'package:real_estate_management_system/pages/property_listing_page.dart';
 import 'package:real_estate_management_system/pages/propertyid_provider.dart';
+import 'package:real_estate_management_system/pages/visit_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -92,40 +93,18 @@ class _HomePageState extends State<HomePage> {
           child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 40, 0, 0),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 29,
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pop();
-
-                    if (currentBody.runtimeType != ProfilePage) {
-                      setState(() {
-                        currentBody = ProfilePage();
-                        appBarHeading = "Profile";
-                        x = 3;
-                      });
-                    }
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      'Profile',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          SizedBox(
+            height: 40,
           ),
-          Container(
-            height: 20,
-          ),
+          SidebarButton(Icons.person, 'Profile Page', ProfilePage(), onTap: () {
+            Navigator.pop(context);
+            if (currentBody.runtimeType != ProfilePage) {
+              setState(() {
+                currentBody = ProfilePage();
+                appBarHeading = "Profile";
+              });
+            }
+          }),
           SidebarButton(
             Icons.home,
             'See Properties',
@@ -190,10 +169,22 @@ class _HomePageState extends State<HomePage> {
               }
             },
           ),
+          SidebarButton(
+              Icons.house_siding_sharp, 'Schedule Visits', VisitPage(),
+              onTap: () {
+            Navigator.pop(context);
+            if (currentBody.runtimeType != VisitPage) {
+              currentBody = VisitPage();
+              appBarHeading = "Schedule Visits";
+              x = 3;
+              setState(() {});
+            }
+          }),
           Spacer(),
           SidebarButton(Icons.logout, 'LogOut', widget, onTap: () async {
-            FirebaseAuth.instance.signOut();
             Navigator.of(context).pop();
+            FirebaseAuth.instance.signOut();
+            // Navigator.of(context).pop();
           })
         ],
       )),

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:real_estate_management_system/pages/favorite_provider.dart';
 import 'package:real_estate_management_system/pages/make_offer.dart';
+import 'package:real_estate_management_system/pages/make_visit.dart.dart';
 import 'package:real_estate_management_system/pages/negotiation_chat.dart';
 import 'package:real_estate_management_system/property_details_provider.dart';
 import 'package:http/http.dart' as http;
@@ -293,71 +294,101 @@ class _FavoritesPropertyDetailsPageState
 
 // Action buttons at the bottom
   Widget _buildActionButtons(BuildContext context) {
-    return Row(
+    return Column(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        Expanded(
-            child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: !isFavorite
-                    ? ElevatedButton(
-                        onPressed: () async {
-                          await addFavorite(
-                              Provider.of<PropertyDetailsProvider>(context,
-                                  listen: false));
-
-                          isFavorite = true;
-                          setState(() {});
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xffff8fa3),
-                          padding: EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        child: Text(
-                          'Add to Favourites',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      )
-                    : ElevatedButton(
-                        onPressed: () async {
-                          await removeFavorite(
-                              Provider.of<FavoriteProvider>(context,
-                                  listen: false),
-                              widget.index);
-                          isFavorite = false;
-                          Provider.of<FavoriteProvider>(context, listen: false)
-                              .removePropertyFromApi(
-                                  Provider.of<FavoriteProvider>(context,
-                                          listen: false)
-                                      .list[widget.index]['property_id']);
-                          Navigator.of(context).pop();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xff4a90e2),
-                          padding: EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        child: Text(
-                          'Remove from Favourites',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ))),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: ElevatedButton(
-              onPressed: () {
-                _showMakeOfferDialog();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                padding: EdgeInsets.symmetric(vertical: 12),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _showMakeOfferDialog();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(
+                      'Make Offer',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
               ),
-              child: Text(
-                'Make Offer',
-                style: TextStyle(color: Colors.white),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _showDateTimePicker(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(
+                      'Request Visit',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
+        ),
+        Row(
+          children: [
+            Expanded(
+                child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: !isFavorite
+                        ? ElevatedButton(
+                            onPressed: () async {
+                              await addFavorite(
+                                  Provider.of<PropertyDetailsProvider>(context,
+                                      listen: false));
+
+                              isFavorite = true;
+                              setState(() {});
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xffff8fa3),
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            child: Text(
+                              'Add to Favourites',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          )
+                        : ElevatedButton(
+                            onPressed: () async {
+                              await removeFavorite(
+                                  Provider.of<FavoriteProvider>(context,
+                                      listen: false),
+                                  widget.index);
+                              isFavorite = false;
+                              Provider.of<FavoriteProvider>(context,
+                                      listen: false)
+                                  .removePropertyFromApi(
+                                      Provider.of<FavoriteProvider>(context,
+                                              listen: false)
+                                          .list[widget.index]['property_id']);
+                              Navigator.of(context).pop();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xff4a90e2),
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                            ),
+                            child: Text(
+                              'Remove from Favourites',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ))),
+          ],
         ),
       ],
     );
@@ -397,5 +428,48 @@ class _FavoritesPropertyDetailsPageState
         );
       },
     );
+  }
+
+  void _showDateTimePicker(BuildContext context) async {
+    final provider =
+        Provider.of<PropertyDetailsProvider>(context, listen: false);
+    DateTime now = DateTime.now();
+
+    DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: now,
+      firstDate: now,
+      lastDate: DateTime(now.year + 2),
+    );
+
+    if (pickedDate == null) return;
+
+    TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+
+    if (pickedTime == null) return;
+
+    DateTime selectedDateTime = DateTime(
+      pickedDate.year,
+      pickedDate.month,
+      pickedDate.day,
+      pickedTime.hour,
+      pickedTime.minute,
+    );
+    Map<String, dynamic> newVisit = {
+      "property_id": provider.list[widget.index]['property_id'],
+      "user_id": FirebaseAuth.instance.currentUser!.uid,
+      "status": "request",
+      "date_and_time": selectedDateTime.toString(),
+      "made_by": "buyer",
+    };
+
+    await makeVisit(newVisit);
+
+    // kist.add(newVisit);
+    // setState(() {});
+    // _showPopupDialog(context, selectedDateTime);
   }
 }

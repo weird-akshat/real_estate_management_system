@@ -8,6 +8,7 @@ import 'package:real_estate_management_system/pages/favorite_provider.dart';
 import 'package:real_estate_management_system/pages/negotiation_chat.dart';
 import 'package:real_estate_management_system/pages/owned_properties_provider.dart';
 import 'package:real_estate_management_system/pages/owner_negotiation_chat.dart';
+import 'package:real_estate_management_system/pages/owner_visit_chat.dart';
 import 'package:real_estate_management_system/property_details_provider.dart';
 import 'package:http/http.dart' as http;
 
@@ -24,15 +25,19 @@ class _OwnedPropertyDetailsPageState extends State<OwnedPropertyDetailsPage> {
   bool isFavorite = true;
 
   List<Map<String, dynamic>> kist = [];
+  List<Map<String, dynamic>> cist = [];
   // @override
   @override
   void initState() {
     super.initState();
     Future.microtask(() async {
       List<Map<String, dynamic>> fetchedList = await fetchBuyers();
+      List<Map<String, dynamic>> fetchedList1 = await fetchVisitors();
       print(fetchedList);
       setState(() {
         kist = fetchedList;
+        cist = fetchedList1;
+
         // print(list);
         // print(list);
       });
@@ -45,6 +50,25 @@ class _OwnedPropertyDetailsPageState extends State<OwnedPropertyDetailsPage> {
             .properties[widget.index]['property_id'];
     final url = Uri.parse(
         'https://real-estate-flask-api.onrender.com/property_buyers/$propertyId');
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      // print(data);
+      if (data is List) {
+        return List<Map<String, dynamic>>.from(data);
+      }
+    }
+    return []; // Return an empty list instead of null
+  }
+
+  Future<List<Map<String, dynamic>>> fetchVisitors() async {
+    int propertyId =
+        Provider.of<OwnedPropertiesProvider>(context, listen: false)
+            .properties[widget.index]['property_id'];
+    final url = Uri.parse(
+        'https://real-estate-flask-api.onrender.com/property/$propertyId/visitors');
 
     final response = await http.get(url);
 
@@ -212,6 +236,19 @@ class _OwnedPropertyDetailsPageState extends State<OwnedPropertyDetailsPage> {
                                 email: kist[index]['email'],
                               ),
                             ),
+                          ),
+                          _buildSectionTitle(
+                              context, 'Visitors', textScaleFactor),
+
+                          Column(
+                            children: List.generate(
+                                cist.length,
+                                (index) => VisitorProfileCard(
+                                    name: cist[index]['name'],
+                                    phone: cist[index]['phone'],
+                                    email: cist[index]['email'],
+                                    buyerId: cist[index]['user_id'],
+                                    propertyId: propertyId!)),
                           ),
 
                           // Action Buttons
@@ -431,6 +468,73 @@ class BuyerProfileCard extends StatelessWidget {
         Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => OwnerNegotiationChat(
                 buyerId: buyerId, propertyId: propertyId)));
+      },
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 4,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 28,
+                backgroundColor: Colors.lightBlue.shade100,
+                child: Icon(LucideIcons.user, size: 30, color: Colors.blue),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(name,
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 4),
+                    Row(children: [
+                      Icon(LucideIcons.phone,
+                          size: 16, color: Colors.grey[600]),
+                      const SizedBox(width: 6),
+                      Text(phone, style: TextStyle(color: Colors.grey[700])),
+                    ]),
+                    const SizedBox(height: 4),
+                    Row(children: [
+                      Icon(LucideIcons.mail, size: 16, color: Colors.grey[600]),
+                      const SizedBox(width: 6),
+                      Text(email, style: TextStyle(color: Colors.grey[700])),
+                    ]),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class VisitorProfileCard extends StatelessWidget {
+  final String name;
+  final String phone;
+  final String email;
+  final String buyerId;
+  final int propertyId;
+
+  const VisitorProfileCard(
+      {super.key,
+      required this.name,
+      required this.phone,
+      required this.email,
+      required this.buyerId,
+      required this.propertyId});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) =>
+                OwnerVisitChat(buyerId: buyerId, propertyId: propertyId)));
       },
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

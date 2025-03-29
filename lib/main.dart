@@ -20,6 +20,7 @@ import 'package:real_estate_management_system/pages/property_details.dart';
 import 'package:real_estate_management_system/pages/property_listing_page.dart';
 import 'package:real_estate_management_system/pages/propertyid_provider.dart';
 import 'package:real_estate_management_system/pages/registeration_page.dart';
+import 'package:real_estate_management_system/pages/visit_chat.dart';
 import 'package:real_estate_management_system/property_details_provider.dart';
 
 void main() async {
@@ -44,10 +45,6 @@ class MyApp extends StatelessWidget {
         // ChangeNotifierProvider(create: (context) => ImageProvider())
       ],
       child: MaterialApp(
-        // home: NegotiationChat(
-        //   buyerId: "21",
-        //   propertyId: 5,
-        // ),
         home: StreamBuilder(
             stream: FirebaseAuth.instance.userChanges(),
             builder: (context, snapshot) {

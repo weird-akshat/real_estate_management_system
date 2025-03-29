@@ -1,7 +1,29 @@
+import 'dart:convert';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class EditProfilePage extends StatelessWidget {
-  const EditProfilePage({super.key});
+  EditProfilePage({super.key});
+  final nameController = TextEditingController();
+  final phoneController = TextEditingController();
+
+  Future updateUser(Map<String, dynamic> map) async {
+    final url =
+        Uri.parse("https://real-estate-flask-api.onrender.com/update_user");
+    final response = await http.put(url,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: jsonEncode(map));
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      print(response.body);
+    } else {
+      print("error");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,44 +38,47 @@ class EditProfilePage extends StatelessWidget {
             ),
           ),
           Center(
-            child: Column(
-              children: [
-                const Spacer(flex: 2),
-                const Text(
-                  'Edit',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 50),
-                ),
-                const Spacer(),
-                _buildTextField(Icons.person, 'Full Name'),
-                _buildTextField(Icons.location_city, 'City'),
-                _buildTextField(Icons.location_on, 'State'),
-                _buildTextField(Icons.map, 'Country'),
-                _buildTextField(Icons.numbers, 'ZIP Code'),
-                _buildTextField(Icons.phone, 'Phone Number'),
-                _buildTextField(Icons.password, 'Password', obscureText: true),
-                Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: TextButton(
-                    style: ButtonStyle(
-                      shape: WidgetStatePropertyAll(
-                        RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(0)),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // const Spacer(flex: 2),
+                  const Text(
+                    'Edit',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 50),
+                  ),
+                  // const Spacer(),
+                  _buildTextField(Icons.person, 'Full Name', nameController),
+                  _buildTextField(Icons.phone, 'Phone Number', phoneController),
+                  Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: TextButton(
+                      style: ButtonStyle(
+                        shape: WidgetStatePropertyAll(
+                          RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(0)),
+                        ),
+                        backgroundColor:
+                            const WidgetStatePropertyAll(Colors.black),
+                        fixedSize: const WidgetStatePropertyAll(Size(300, 50)),
                       ),
-                      backgroundColor:
-                          const WidgetStatePropertyAll(Colors.black),
-                      fixedSize: const WidgetStatePropertyAll(Size(300, 50)),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text(
-                      'Save',
-                      style: TextStyle(color: Colors.white),
+                      onPressed: () async {
+                        final map = {
+                          "user_id": FirebaseAuth.instance.currentUser!.uid,
+                          "name": nameController.text.trim(),
+                          "phone": phoneController.text.trim(),
+                        };
+                        await updateUser(map);
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text(
+                        'Save',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ),
-                ),
-                const Spacer(flex: 2),
-              ],
+                  // const Spacer(flex: 2),
+                ],
+              ),
             ),
           ),
         ],
@@ -61,13 +86,14 @@ class EditProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(IconData icon, String hint,
+  Widget _buildTextField(IconData icon, String hint, TextEditingController t,
       {bool obscureText = false}) {
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: SizedBox(
         width: 300,
         child: TextField(
+          controller: t,
           obscureText: obscureText,
           decoration: InputDecoration(
             filled: true,
