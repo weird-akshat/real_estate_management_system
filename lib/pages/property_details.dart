@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:real_estate_management_system/pages/favorite_provider.dart';
+import 'package:real_estate_management_system/pages/image_view_screen.dart';
 import 'package:real_estate_management_system/pages/make_offer.dart';
 import 'package:real_estate_management_system/pages/make_visit.dart.dart';
 import 'package:real_estate_management_system/pages/negotiation_chat.dart';
@@ -89,10 +90,17 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                       floating: false,
                       pinned: true,
                       flexibleSpace: FlexibleSpaceBar(
-                        background: Image.network(
-                          imageUrl,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
+                        background: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => ImageViewScreen(provider
+                                    .list[widget.index]['property_id'])));
+                          },
+                          child: Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                          ),
                         ),
                       ),
                       leading: IconButton(

@@ -98,7 +98,7 @@ class _NegotiationChatState extends State<OwnerNegotiationChat> {
               itemBuilder: (context, index) => PaymentChatTile(
                 price: list[index]['amount'],
                 date: DateTime.parse(list[index]['offer_date']),
-                status: list[index]['offer_status'],
+                // status: list[index]['offer_status'],
                 isBuyer: list[index]['made_by'] != 'buyer',
               ),
             ),
@@ -207,14 +207,14 @@ class _MakeOfferDialogState extends State<MakeOfferDialog> {
 class PaymentChatTile extends StatelessWidget {
   final double price;
   final DateTime date;
-  final String status;
+  // final String status;
   final bool isBuyer;
 
   const PaymentChatTile({
     Key? key,
     required this.price,
     required this.date,
-    required this.status,
+    // required this.status,
     required this.isBuyer,
   }) : super(key: key);
 
@@ -254,7 +254,7 @@ class PaymentChatTile extends StatelessWidget {
               children: [
                 // Price
                 Text(
-                  '\$${price.toStringAsFixed(2)}',
+                  '${price.toStringAsFixed(2)}',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -267,7 +267,7 @@ class PaymentChatTile extends StatelessWidget {
 
                 // Status and Date
                 Text(
-                  '$status • ${DateFormat('MMM dd, hh:mm a').format(date)}',
+                  '${DateFormat('MMM dd, hh:mm a').format(date)}',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 12,

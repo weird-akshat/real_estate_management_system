@@ -44,12 +44,41 @@ class _AddImagePageState extends State<AddImagePage> {
                 ),
                 Expanded(
                   child: GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3),
-                      itemCount: list.length + 1,
-                      itemBuilder: (context, index) {
-                        return BuildImageButton(list, _updateState);
-                      }),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3),
+                    itemCount: list.length + 1,
+                    itemBuilder: (context, index) {
+                      return index < list.length
+                          ? BuildImageButton(
+                              list,
+                              _updateState,
+                              index, // Always using the current index from the builder
+                            )
+                          : GestureDetector(
+                              onTap: () async {
+                                final pickedFile = await picker.pickImage(
+                                    source: ImageSource.gallery);
+                                if (pickedFile != null) {
+                                  setState(() {
+                                    list.add(File(pickedFile.path));
+                                  });
+                                }
+                              },
+                              child: Container(
+                                height: 100,
+                                width: 100,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Colors.grey,
+                                      style: BorderStyle.solid),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(Icons.add,
+                                    size: 40, color: Colors.grey),
+                              ),
+                            );
+                    },
+                  ),
                 ),
                 TextButton(
                   onPressed: () async {
@@ -57,8 +86,8 @@ class _AddImagePageState extends State<AddImagePage> {
                       isClikced = true;
                     });
                     try {
-                      for (File i in list) {
-                        await uploadImage(i);
+                      for (int i = 0; i < list.length; i++) {
+                        await uploadImage(list[i], i == 0);
                       }
 
                       Navigator.of(context).pushReplacement(
@@ -77,7 +106,7 @@ class _AddImagePageState extends State<AddImagePage> {
           );
   }
 
-  Future<void> uploadImage(File i) async {
+  Future<void> uploadImage(File i, bool primary) async {
     if (list.isEmpty) {
       debugPrint("Error: No images selected.");
       return;
@@ -91,7 +120,7 @@ class _AddImagePageState extends State<AddImagePage> {
         Provider.of<PropertyidProvider>(context, listen: false)
             .propertyId
             .toString();
-    request.fields['is_primary'] = 'Yes';
+    request.fields['is_primary'] = primary ? 'Yes' : 'No';
 
     var imageFile = await http.MultipartFile.fromPath('image', i.path);
     request.files.add(imageFile);
@@ -106,3 +135,6 @@ class _AddImagePageState extends State<AddImagePage> {
     }
   }
 }
+
+
+// before i was just removing the whole fucking thing before 

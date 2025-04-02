@@ -45,6 +45,7 @@ class MyApp extends StatelessWidget {
         // ChangeNotifierProvider(create: (context) => ImageProvider())
       ],
       child: MaterialApp(
+        // home: AddImagePage(),
         home: StreamBuilder(
             stream: FirebaseAuth.instance.userChanges(),
             builder: (context, snapshot) {
