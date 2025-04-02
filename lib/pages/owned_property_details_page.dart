@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:real_estate_management_system/pages/favorite_provider.dart';
+import 'package:real_estate_management_system/pages/image_view_screen.dart';
 import 'package:real_estate_management_system/pages/negotiation_chat.dart';
 import 'package:real_estate_management_system/pages/owned_properties_provider.dart';
 import 'package:real_estate_management_system/pages/owner_negotiation_chat.dart';
@@ -130,10 +131,17 @@ class _OwnedPropertyDetailsPageState extends State<OwnedPropertyDetailsPage> {
                       floating: false,
                       pinned: true,
                       flexibleSpace: FlexibleSpaceBar(
-                        background: Image.network(
-                          imageUrl,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
+                        background: GestureDetector(
+                          onTap: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) =>
+                                    ImageViewScreen(propertyId!)));
+                          },
+                          child: Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                          ),
                         ),
                       ),
                       leading: IconButton(
