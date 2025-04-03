@@ -8,6 +8,7 @@ import 'package:real_estate_management_system/pages/make_offer.dart';
 class OwnerNegotiationChat extends StatefulWidget {
   final String buyerId;
   final int propertyId;
+
   const OwnerNegotiationChat(
       {super.key, required this.buyerId, required this.propertyId});
 
@@ -17,16 +18,50 @@ class OwnerNegotiationChat extends StatefulWidget {
 
 class _NegotiationChatState extends State<OwnerNegotiationChat> {
   List<Map<String, dynamic>> list = [];
-
+  bool isSold = false;
   @override
   void initState() {
     super.initState();
     Future.microtask(() async {
       List<Map<String, dynamic>> fetchedList = await fetchOffers();
+      isSold = await checkSold();
       setState(() {
         list = fetchedList;
       });
     });
+  }
+
+  Future markPropoertySold() async {
+    int propertyId = widget.propertyId;
+
+    final url = Uri.parse(
+        "https://real-estate-flask-api.onrender.com/mark_property_sold/$propertyId");
+
+    final response = await http.put(url);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      print('success');
+    } else {
+      print("error");
+    }
+  }
+
+  Future checkSold() async {
+    int propertyId = widget.propertyId;
+    final url = Uri.parse(
+        'https://real-estate-flask-api.onrender.com/is_property_sold/$propertyId');
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final data = jsonDecode(response.body)['sold'];
+
+      print(data);
+
+      return data;
+    } else {
+      print("error");
+    }
   }
 
   void refresh() {
@@ -67,6 +102,19 @@ class _NegotiationChatState extends State<OwnerNegotiationChat> {
     );
   }
 
+  Future updateOffer(int offerId) async {
+    final url = Uri.parse(
+        'https://real-estate-flask-api.onrender.com/accept_offer/$offerId');
+
+    final response = await http.put(url);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      print("success update Offer");
+    } else {
+      print("error update Offer");
+    }
+  }
+
   Future<List<Map<String, dynamic>>> fetchOffers() async {
     String userId = widget.buyerId;
     int propId = widget.propertyId;
@@ -87,6 +135,55 @@ class _NegotiationChatState extends State<OwnerNegotiationChat> {
     }
   }
 
+  void _showAcceptDialog(BuildContext context, int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Accept Offer"),
+          content: Text("Do you want to accept this offer?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                bool sold = await checkSold();
+                if (!sold) {
+                  //here we have to update the property as sold, and also update the offer
+
+                  //first check if the property is already sold or not
+                  //if yes then you can't accept the offer
+
+                  //now just update the api and also just update the status of the offer
+                  await markPropoertySold();
+
+                  int offerId = list[index]['offer_id'];
+
+                  await updateOffer(offerId);
+                  print("Offer Accepted! ✅");
+
+                  Navigator.of(context).pop();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Property Already sold"),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
+                // Perform any update logic here
+                Navigator.of(context).pop();
+              },
+              child: Text("Accept"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,20 +192,40 @@ class _NegotiationChatState extends State<OwnerNegotiationChat> {
           Expanded(
             child: ListView.builder(
               itemCount: list.length,
-              itemBuilder: (context, index) => PaymentChatTile(
-                price: list[index]['amount'],
-                date: DateTime.parse(list[index]['offer_date']),
-                // status: list[index]['offer_status'],
-                isBuyer: list[index]['made_by'] != 'buyer',
-              ),
+              itemBuilder: (context, index) {
+                //you know what, i think i should check whether the property is already sold here only, if not then only gesture detector
+                if (list[index]['made_by'] == 'buyer' && isSold == false) {
+                  return GestureDetector(
+                    onTap: () {
+                      _showAcceptDialog(context, index);
+                    },
+                    child: PaymentChatTile(
+                      price: list[index]['amount'],
+                      // status: list[index]['status'],
+                      date: DateTime.parse(list[index]['offer_date']),
+                      status: list[index]['offer_status'],
+                      isBuyer: list[index]['made_by'] != 'buyer',
+                    ),
+                  );
+                }
+                return PaymentChatTile(
+                  price: list[index]['amount'],
+                  // status: list[index]['status'],
+                  date: DateTime.parse(list[index]['offer_date']),
+                  status: list[index]['offer_status'],
+                  isBuyer: list[index]['made_by'] != 'buyer',
+                );
+              },
             ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              ElevatedButton(onPressed: () {}, child: Text('Accept Offer')),
-              ElevatedButton(
-                  onPressed: _showMakeOfferDialog, child: Text('Make Offer')),
+              if (!isSold)
+                ElevatedButton(
+                    onPressed: _showMakeOfferDialog, child: Text('Make Offer'))
+              else
+                Text('Property Already Sold'),
             ],
           )
         ],
@@ -123,6 +240,7 @@ class MakeOfferDialog extends StatefulWidget {
   final int propertyId;
   final String buyerId;
   final VoidCallback refresh;
+
   final Function(double amount) onOfferSubmitted;
 
   MakeOfferDialog(
@@ -152,7 +270,6 @@ class _MakeOfferDialogState extends State<MakeOfferDialog> {
           controller: _amountController,
           decoration: InputDecoration(
             labelText: 'Offer Amount',
-            prefixText: '\$',
             border: OutlineInputBorder(),
           ),
           keyboardType: TextInputType.numberWithOptions(decimal: true),
@@ -207,14 +324,14 @@ class _MakeOfferDialogState extends State<MakeOfferDialog> {
 class PaymentChatTile extends StatelessWidget {
   final double price;
   final DateTime date;
-  // final String status;
+  final String status;
   final bool isBuyer;
 
   const PaymentChatTile({
     Key? key,
     required this.price,
     required this.date,
-    // required this.status,
+    required this.status,
     required this.isBuyer,
   }) : super(key: key);
 
@@ -230,9 +347,11 @@ class PaymentChatTile extends StatelessWidget {
           ),
           child: Container(
             decoration: BoxDecoration(
-              color: isBuyer
-                  ? const Color(0xFFE6F2FF) // Light Blue
-                  : const Color(0xFFF0E6FF), // Light Purple
+              color: status == 'Accepted'
+                  ? Colors.lightGreenAccent
+                  : (isBuyer
+                      ? const Color(0xFFE6F2FF) // Light Blue
+                      : const Color(0xFFF0E6FF)), // Light Purple
               borderRadius: BorderRadius.only(
                 topLeft: const Radius.circular(16),
                 topRight: const Radius.circular(16),
@@ -254,7 +373,7 @@ class PaymentChatTile extends StatelessWidget {
               children: [
                 // Price
                 Text(
-                  '${price.toStringAsFixed(2)}',
+                  ' ${price.toStringAsFixed(2)}',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,

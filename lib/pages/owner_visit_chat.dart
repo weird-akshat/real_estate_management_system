@@ -74,6 +74,55 @@ class _NegotiationChatState extends State<OwnerVisitChat> {
   void refresh() {
     setState(() {});
   }
+
+  Future confirmVisit(int visitId) async {
+    final url = Uri.parse(
+        'https://real-estate-flask-api.onrender.com/update_visit_status/$visitId');
+
+    final response = await http.put(url);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      print(response.body);
+      return true;
+    } else {
+      print("error");
+    }
+  }
+
+  void showVisitConfirmationDialog(BuildContext context, int visitId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirm Visit"),
+          content: Text("Do you want to confirm this visit?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () async {
+                bool success = await confirmVisit(visitId);
+                Navigator.pop(context);
+                if (success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Visit confirmed successfully")),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Failed to confirm visit")),
+                  );
+                }
+                Navigator.of(context).pop();
+              },
+              child: Text("Accept"),
+            ),
+          ],
+        );
+      },
+    );
+  }
   //since i have all the visits scheduled between a person and a property
   //i need a dialogue box essentially? that'll show the date essentially
 
@@ -108,15 +157,30 @@ class _NegotiationChatState extends State<OwnerVisitChat> {
           Expanded(
             child: ListView.builder(
               itemCount: kist.length,
-              itemBuilder: (context, index) => DateChatBox(
-                  date: DateTime.parse(kist[index]['date_and_time']),
-                  isUser: kist[index]['made_by'] == 'owner'),
+              itemBuilder: (context, index) {
+                if (kist[index]['made_by'] != 'owner') {
+                  return GestureDetector(
+                    onTap: () {
+                      showVisitConfirmationDialog(
+                          context, kist[index]['visit_id']);
+                    },
+                    child: DateChatBox(
+                        status: kist[index]['status'],
+                        date: DateTime.parse(kist[index]['date_and_time']),
+                        isUser: kist[index]['made_by'] == 'owner'),
+                  );
+                }
+
+                return DateChatBox(
+                    status: kist[index]['status'],
+                    date: DateTime.parse(kist[index]['date_and_time']),
+                    isUser: kist[index]['made_by'] == 'owner');
+              },
             ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              ElevatedButton(onPressed: () {}, child: Text('Accept Visit')),
               ElevatedButton(
                   onPressed: () async {
                     // await addVisits();
@@ -134,11 +198,13 @@ class _NegotiationChatState extends State<OwnerVisitChat> {
 class DateChatBox extends StatelessWidget {
   final DateTime date;
   final bool isUser;
+  final String status;
 
   const DateChatBox({
     super.key,
     required this.date,
     required this.isUser,
+    required this.status,
   });
 
   @override
@@ -152,9 +218,11 @@ class DateChatBox extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         decoration: BoxDecoration(
-          color: isUser
-              ? Colors.lightBlueAccent.withOpacity(0.9)
-              : Colors.redAccent.withOpacity(0.9),
+          color: status == 'confirmed'
+              ? Colors.lightGreenAccent
+              : (isUser
+                  ? Colors.lightBlueAccent.withOpacity(0.9)
+                  : Colors.redAccent.withOpacity(0.9)),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(

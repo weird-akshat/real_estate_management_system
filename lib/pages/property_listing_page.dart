@@ -100,6 +100,9 @@ class BodyPropertyList extends StatefulWidget {
 }
 
 class _BodyPropertyListState extends State<BodyPropertyList> {
+  String searchQuery = '';
+  List<Map<String, dynamic>> filteredList = [];
+
   void refreshPage() {
     setState(() {});
   }
@@ -107,6 +110,7 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
   @override
   void initState() {
     super.initState();
+    filteredList = List.from(widget.list);
     chip1 = CategoryChip(
       label: 'Houses',
       color: Colors.black,
@@ -123,6 +127,24 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
     );
   }
 
+  // Method to filter properties based on search query
+  void filterProperties(String query) {
+    setState(() {
+      searchQuery = query.toLowerCase();
+      if (searchQuery.isEmpty) {
+        filteredList = List.from(widget.list);
+      } else {
+        filteredList = widget.list.where((property) {
+          // Check if any field in the property matches the search query
+          return property.entries.any((entry) {
+            if (entry.value == null) return false;
+            return entry.value.toString().toLowerCase().contains(searchQuery);
+          });
+        }).toList();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -134,6 +156,7 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
             SizedBox(
               width: 200,
               child: TextField(
+                onChanged: filterProperties,
                 decoration: InputDecoration(
                   enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(5)),
@@ -144,7 +167,7 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
                   focusColor: Colors.black,
                   prefixIcon: Icon(Icons.search),
                   border: OutlineInputBorder(),
-                  hintText: 'Location',
+                  hintText: 'Search anything',
                 ),
               ),
             ),
@@ -174,22 +197,33 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
           ],
         ),
         Expanded(
-          child: ListView.builder(
-              itemCount: widget.list.length,
-              itemBuilder: (context, index) {
-                if (widget.list[index]['owner_id'] !=
-                    FirebaseAuth.instance.currentUser!.uid) {
-                  return PropertyCard(
-                    index: index,
-                    propertyId: widget.list[index]['property_id'],
-                    price: widget.list[index]['price'].toString(),
-                    area: widget.list[index]['area'],
-                    numBed: widget.list[index]['bedrooms'],
-                    propertyName: widget.list[index]['name'],
-                    onRefresh: refreshPage,
-                  );
-                } else {}
-              }),
+          child: filteredList.isEmpty
+              ? Center(child: Text('No properties match your search'))
+              : ListView.builder(
+                  itemCount: filteredList.length,
+                  itemBuilder: (context, index) {
+                    // Find the original index in the widget.list
+                    final propertyId = filteredList[index]['property_id'];
+                    final originalIndex = widget.list.indexWhere(
+                        (property) => property['property_id'] == propertyId);
+
+                    if (filteredList[index]['owner_id'] !=
+                        FirebaseAuth.instance.currentUser!.uid) {
+                      return PropertyCard(
+                        index:
+                            originalIndex, // Use original index for provider lookup
+                        propertyId: filteredList[index]['property_id'],
+                        price: filteredList[index]['price'].toString(),
+                        area: filteredList[index]['area'],
+                        numBed: filteredList[index]['bedrooms'],
+                        propertyName: filteredList[index]['name'],
+                        onRefresh: refreshPage,
+                      );
+                    } else {
+                      return SizedBox
+                          .shrink(); // Return empty widget for user's own properties
+                    }
+                  }),
         )
       ],
     );
