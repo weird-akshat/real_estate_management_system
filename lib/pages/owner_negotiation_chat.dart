@@ -19,6 +19,7 @@ class OwnerNegotiationChat extends StatefulWidget {
 class _NegotiationChatState extends State<OwnerNegotiationChat> {
   List<Map<String, dynamic>> list = [];
   bool isSold = false;
+
   @override
   void initState() {
     super.initState();
@@ -55,12 +56,24 @@ class _NegotiationChatState extends State<OwnerNegotiationChat> {
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       final data = jsonDecode(response.body)['sold'];
-
       print(data);
-
       return data;
     } else {
       print("error");
+      return false;
+    }
+  }
+
+  Future updateOffer(int offerId) async {
+    final url = Uri.parse(
+        'https://real-estate-flask-api.onrender.com/accept_offer/$offerId');
+
+    final response = await http.put(url);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      print("success update Offer");
+    } else {
+      print("error update Offer");
     }
   }
 
@@ -85,7 +98,7 @@ class _NegotiationChatState extends State<OwnerNegotiationChat> {
               "buyer_id": widget.buyerId,
               "amount": amount,
               "offer_status": "pending",
-              "offer_date": DateTime.now().toString(),
+              "offer_date": DateTime.now().toIso8601String(),
               "made_by": "owner",
             };
             makeOffer(newOffer);
@@ -102,16 +115,24 @@ class _NegotiationChatState extends State<OwnerNegotiationChat> {
     );
   }
 
-  Future updateOffer(int offerId) async {
-    final url = Uri.parse(
-        'https://real-estate-flask-api.onrender.com/accept_offer/$offerId');
+  Future<void> makeOffer(Map<String, dynamic> offer) async {
+    final url =
+        Uri.parse('https://real-estate-flask-api.onrender.com/make_offer');
 
-    final response = await http.put(url);
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(offer),
+      );
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      print("success update Offer");
-    } else {
-      print("error update Offer");
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("Offer successfully made");
+      } else {
+        print("Error making offer: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Exception making offer: $e");
     }
   }
 
@@ -184,50 +205,101 @@ class _NegotiationChatState extends State<OwnerNegotiationChat> {
     );
   }
 
+  // Helper method to parse dates safely
+  DateTime parseDate(String dateStr) {
+    try {
+      // Try parsing ISO format
+      return DateTime.parse(dateStr);
+    } catch (e) {
+      try {
+        // Try alternative format
+        var format = DateFormat("yyyy-MM-dd HH:mm:ss");
+        return format.parse(dateStr);
+      } catch (e) {
+        print("Error parsing date: $dateStr");
+        // Return current date as fallback
+        return DateTime.now();
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: list.length,
-              itemBuilder: (context, index) {
-                //you know what, i think i should check whether the property is already sold here only, if not then only gesture detector
-                if (list[index]['made_by'] == 'buyer' && isSold == false) {
-                  return GestureDetector(
-                    onTap: () {
-                      _showAcceptDialog(context, index);
-                    },
-                    child: PaymentChatTile(
-                      price: list[index]['amount'],
-                      // status: list[index]['status'],
-                      date: DateTime.parse(list[index]['offer_date']),
+          Positioned.fill(
+              child: Image.asset(
+            'assets/images/loginbackground.jpg',
+            fit: BoxFit.cover,
+          )),
+          Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: list.length,
+                  itemBuilder: (context, index) {
+                    //you know what, i think i should check whether the property is already sold here only, if not then only gesture detector
+                    if (list[index]['made_by'] == 'buyer' && isSold == false) {
+                      return GestureDetector(
+                        onTap: () {
+                          _showAcceptDialog(context, index);
+                        },
+                        child: PaymentChatTile(
+                          price: double.parse(list[index]['amount'].toString()),
+                          date: parseDate(list[index]['offer_date']),
+                          status: list[index]['offer_status'],
+                          isBuyer: list[index]['made_by'] != 'buyer',
+                        ),
+                      );
+                    }
+                    return PaymentChatTile(
+                      price: double.parse(list[index]['amount'].toString()),
+                      date: parseDate(list[index]['offer_date']),
                       status: list[index]['offer_status'],
                       isBuyer: list[index]['made_by'] != 'buyer',
-                    ),
-                  );
-                }
-                return PaymentChatTile(
-                  price: list[index]['amount'],
-                  // status: list[index]['status'],
-                  date: DateTime.parse(list[index]['offer_date']),
-                  status: list[index]['offer_status'],
-                  isBuyer: list[index]['made_by'] != 'buyer',
-                );
-              },
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              if (!isSold)
-                ElevatedButton(
-                    onPressed: _showMakeOfferDialog, child: Text('Make Offer'))
-              else
-                Text('Property Already Sold'),
+                    );
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    if (!isSold)
+                      ElevatedButton(
+                        onPressed: _showMakeOfferDialog,
+                        child: Text(
+                          'Make Offer',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
+                        ),
+                      )
+                    else
+                      Container(
+                        padding: EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'Property Already Sold',
+                          style: TextStyle(
+                            color: Colors.red.shade800,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              )
             ],
-          )
+          ),
         ],
       ),
     );
@@ -271,6 +343,7 @@ class _MakeOfferDialogState extends State<MakeOfferDialog> {
           decoration: InputDecoration(
             labelText: 'Offer Amount',
             border: OutlineInputBorder(),
+            prefixText: '₹ ',
           ),
           keyboardType: TextInputType.numberWithOptions(decimal: true),
           validator: (value) {
@@ -295,14 +368,8 @@ class _MakeOfferDialogState extends State<MakeOfferDialog> {
             if (_formKey.currentState!.validate()) {
               // Parse the value
               final amount = double.parse(_amountController.text);
-              Map<String, dynamic> map = {
-                //get the offer_id from the api at the end
-              };
-
               // Call the submitted callback
               widget.onOfferSubmitted(amount);
-              // widget.list.add(map);
-              // print(widget.list);
               widget.refresh();
             }
           },
@@ -320,7 +387,7 @@ class _MakeOfferDialogState extends State<MakeOfferDialog> {
   }
 }
 
-// Existing PaymentChatTile remains the same as in the previous code
+// PaymentChatTile with improved styling
 class PaymentChatTile extends StatelessWidget {
   final double price;
   final DateTime date;
@@ -347,7 +414,7 @@ class PaymentChatTile extends StatelessWidget {
           ),
           child: Container(
             decoration: BoxDecoration(
-              color: status == 'Accepted'
+              color: status.toLowerCase() == 'accepted'
                   ? Colors.lightGreenAccent
                   : (isBuyer
                       ? const Color(0xFFE6F2FF) // Light Blue
@@ -373,7 +440,7 @@ class PaymentChatTile extends StatelessWidget {
               children: [
                 // Price
                 Text(
-                  ' ${price.toStringAsFixed(2)}',
+                  '₹ ${price.toStringAsFixed(2)}',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -384,9 +451,25 @@ class PaymentChatTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
 
-                // Status and Date
+                // Status
                 Text(
-                  '${DateFormat('MMM dd, hh:mm a').format(date)}',
+                  status,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: status.toLowerCase() == 'accepted'
+                        ? Colors.green.shade800
+                        : (status.toLowerCase() == 'pending'
+                            ? Colors.orange.shade800
+                            : Colors.red.shade800),
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+
+                // Date
+                Text(
+                  '• ${DateFormat('MMM dd, hh:mm a').format(date)}',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 12,

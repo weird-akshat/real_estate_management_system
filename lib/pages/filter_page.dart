@@ -92,7 +92,8 @@ class _FilterPageState extends State<FilterPage> {
       var data = jsonDecode(response.body);
       for (var map in data) {
         if (map['is_primary'] == 'Yes') {
-          return map['image_url'];
+          return "https://real-estate-flask-api.onrender.com" +
+              map['image_url'];
         }
       }
     }
@@ -122,46 +123,55 @@ class _FilterPageState extends State<FilterPage> {
                     icon: Icons.place,
                     t: areaController,
                     string: 'Area',
+                    numKey: false,
                   ),
                   FilterCards(
                     icon: Icons.location_city,
                     t: cityController,
                     string: 'City',
+                    numKey: false,
                   ),
                   FilterCards(
                     icon: Icons.map,
                     t: stateController,
                     string: 'State',
+                    numKey: false,
                   ),
                   FilterCards(
                     icon: Icons.currency_rupee,
                     t: minpriceController,
                     string: 'Minimum Price',
+                    numKey: true,
                   ),
                   FilterCards(
                     icon: Icons.currency_rupee_outlined,
                     t: maxpriceController,
                     string: 'Maximum Price',
+                    numKey: true,
                   ),
                   FilterCards(
                     icon: Icons.bed,
                     t: bedController,
                     string: 'Bedrooms',
+                    numKey: true,
                   ),
                   FilterCards(
                     icon: Icons.bathroom,
                     t: bathController,
                     string: 'Bathrooms',
+                    numKey: true,
                   ),
                   FilterCards(
                     icon: Icons.balcony,
                     t: balconyController,
                     string: 'Balcony',
+                    numKey: true,
                   ),
                   FilterCards(
                     icon: Icons.local_parking,
                     t: parkingController,
                     string: 'Parking',
+                    numKey: true,
                   ),
                   ElevatedButton(
                     onPressed: () async {
@@ -174,7 +184,14 @@ class _FilterPageState extends State<FilterPage> {
                         );
                       }
                     },
-                    child: Text('Submit'),
+                    style: ButtonStyle(
+                      backgroundColor:
+                          const WidgetStatePropertyAll(Colors.black),
+                    ),
+                    child: Text(
+                      'Submit',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   )
                 ],
               ),
@@ -190,7 +207,9 @@ class FilterCards extends StatelessWidget {
   final IconData icon;
   final TextEditingController t;
   final String string;
+  final bool numKey;
   const FilterCards({
+    required this.numKey,
     required this.icon,
     required this.t,
     required this.string,
@@ -214,6 +233,8 @@ class FilterCards extends StatelessWidget {
                 child: Column(
                   children: [
                     TextField(
+                      keyboardType:
+                          numKey ? TextInputType.number : TextInputType.text,
                       controller: t,
                       decoration: InputDecoration(
                           hintText: string,

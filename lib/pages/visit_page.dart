@@ -20,7 +20,7 @@ class _NegotiationPageState extends State<VisitPage> {
   }
 
   List<Map<String, dynamic>> list = [];
-  @override
+
   @override
   void initState() {
     super.initState();
@@ -35,20 +35,52 @@ class _NegotiationPageState extends State<VisitPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (list.length == 0) {
+      return Center(
+        child: Text('No Property Found'),
+      );
+    }
     return ListView.builder(
         itemCount: list.length,
         itemBuilder: (context, index) => NegotiationBodyPropertyCard(
-            image:
-                'https://real-estate-flask-api.onrender.com/${list[index]['image_url']}',
+            image: list[index]['image_url'].startsWith('http')
+                ? list[index]['image_url']
+                : 'https://real-estate-flask-api.onrender.com${list[index]['image_url']}',
             index: index,
             propertyId: int.parse(list[index]['property_id'].toString()),
             price: list[index]['price'].toString(),
             area: list[index]['area'].toString(),
-            numBed: list[index]['bedrooms'].toString(),
+            numBed: list[index]['bedrooms'].toString() + " BHK",
             propertyName: list[index]['name'].toString(),
             onRefresh: onRefresh));
+  }
+}
 
-    //so from the api we only need image_url, property_id, price, area bedrooms, property_name but ehh we'll get everything
+Future<String> fetchImage(int propertyId) async {
+  final url = Uri.parse(
+    'https://real-estate-flask-api.onrender.com/get_property_images?property_id=$propertyId',
+  );
+
+  try {
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+
+      if (data is List && data.isNotEmpty) {
+        for (Map<String, dynamic> map in data) {
+          if (map['is_primary'] == 'Yes') {
+            return map['image_url'];
+          }
+        }
+        // If no primary image found but we have images, return the first one
+        return data[0]['image_url'];
+      }
+    }
+    // If we reach here, something went wrong
+    return '/api/get_image/$propertyId'; // Fallback to direct API call
+  } catch (e) {
+    print('Error fetching image: $e');
+    return '/api/get_image/$propertyId'; // Fallback on error
   }
 }
 
@@ -62,7 +94,30 @@ Future<List<Map<String, dynamic>>> fetchProperties() async {
   if (response.statusCode == 200) {
     var data = jsonDecode(response.body);
     if (data is List) {
-      return List<Map<String, dynamic>>.from(data);
+      // Fetch image URLs concurrently
+      List<Map<String, dynamic>> propertiesWithImages = [];
+
+      for (var property in data) {
+        int propertyId = property['property_id'];
+        try {
+          // Fetch the image URL for each property
+          String imagePath = await fetchImage(propertyId);
+
+          // Properly format the image URL
+          if (imagePath.startsWith('http')) {
+            property['image_url'] = imagePath;
+          } else {
+            property['image_url'] = imagePath;
+          }
+        } catch (e) {
+          print('Error processing property image: $e');
+          property['image_url'] = '/api/get_image/$propertyId'; // Fallback path
+        }
+
+        propertiesWithImages.add(property);
+      }
+
+      return propertiesWithImages;
     } else {
       throw Exception('Expected a list but got something else');
     }
@@ -93,10 +148,6 @@ class NegotiationBodyPropertyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // print('hey');
-    // print(Provider.of<FavoriteProvider>(context, listen: false)
-    //     .images[propertyId]);
-    // print('hey2');
     return GestureDetector(
       onTap: () async {
         Navigator.of(context).push(MaterialPageRoute(builder: (context) {
@@ -105,36 +156,52 @@ class NegotiationBodyPropertyCard extends StatelessWidget {
             propertyId: propertyId,
           );
         }));
-        // onRefresh();
       },
       child: Container(
         decoration: BoxDecoration(),
-        // color: Colors.black87,
-        // borderRadius: BorderRadius.circular(20),
         child: Card(
+          color: Color(0xcfd8e2dc),
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(5),
-              side: BorderSide(color: Colors.black, width: 01)),
+              borderRadius: BorderRadius.circular(10),
+              side: BorderSide(color: Colors.black, width: 0)),
           surfaceTintColor: Colors.white70,
-
           margin: EdgeInsets.all(10),
           elevation: 15,
-          // decoration: BoxDecoration(
-          // border: Border.all(),
-          // borderRadius: BorderRadius.circular(20),
-          // ),
-
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Image.network(image)
-
-                      // // child: Image.network(image)
-                      )),
+                  child: Image.network(
+                    image,
+                    errorBuilder: (context, error, stackTrace) {
+                      print('Error loading image: $error');
+                      return Image.network(
+                        'https://via.placeholder.com/150',
+                        height: 150,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      );
+                    },
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                              : null,
+                        ),
+                      );
+                    },
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
               Text(
                 propertyName,
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),

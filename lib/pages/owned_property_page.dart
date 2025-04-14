@@ -32,26 +32,30 @@ class _OwnedPropertyPageState extends State<OwnedPropertyPage> {
   Widget build(BuildContext context) {
     list = Provider.of<OwnedPropertiesProvider>(context).properties;
     print(list);
-    return Scaffold(
-        body: Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: ListView.builder(
-              itemCount: list.length,
-              itemBuilder: (context, index) {
-                return OwnedPropertyCard(
-                  index: index,
-                  propertyId: list[index]['property_id'],
-                  price: list[index]['price'].toString(),
-                  area: list[index]['area'],
-                  numBed: list[index]['bedrooms'],
-                  propertyName: list[index]['name'],
-                  onRefresh: refreshPage,
-                );
-              }),
+          child: list.isEmpty
+              ? Center(
+                  child: Text('No Properties Owned'),
+                )
+              : ListView.builder(
+                  itemCount: list.length,
+                  itemBuilder: (context, index) {
+                    return OwnedPropertyCard(
+                      index: index,
+                      propertyId: list[index]['property_id'],
+                      price: list[index]['price'].toString(),
+                      area: list[index]['area'],
+                      numBed: list[index]['bedrooms'] + " BHK",
+                      propertyName: list[index]['name'],
+                      onRefresh: refreshPage,
+                    );
+                  },
+                ),
         )
       ],
-    ));
+    );
   }
 }

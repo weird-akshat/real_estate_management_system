@@ -55,73 +55,89 @@ class _AddPropertyPageState extends State<AddPropertyPage> {
                         ),
                         SizedBox(height: 20),
                         InfoField(
-                            text: 'Property Name',
-                            iconData: Icons.home,
-                            t: nameController),
-                        InfoField(
-                          text: 'City',
-                          iconData: Icons.location_on,
-                          t: cityController,
+                          text: 'Locality',
+                          iconData: Icons.place,
+                          t: areaController,
+                          numKey: false,
                         ),
                         InfoField(
-                          text: 'State',
-                          iconData: Icons.map,
-                          t: stateController,
+                          text: 'Property Name',
+                          iconData: Icons.home,
+                          t: nameController,
+                          numKey: false,
                         ),
                         InfoField(
-                          text: 'Country',
-                          iconData: Icons.public,
-                          t: countryController,
-                        ),
+                            text: 'City',
+                            iconData: Icons.location_city,
+                            t: cityController,
+                            numKey: false),
                         InfoField(
-                          text: 'Price',
-                          iconData: Icons.currency_rupee,
-                          t: priceController,
-                        ),
+                            text: 'State',
+                            iconData: Icons.map,
+                            t: stateController,
+                            numKey: false),
+                        InfoField(
+                            text: 'Country',
+                            iconData: Icons.public,
+                            t: countryController,
+                            numKey: false),
+                        InfoField(
+                            text: 'Price',
+                            iconData: Icons.currency_rupee,
+                            t: priceController,
+                            numKey: true),
                         InfoField(
                             text: 'Balcony',
                             iconData: Icons.balcony,
-                            t: balconyController),
+                            t: balconyController,
+                            numKey: true),
                         InfoField(
                             text: 'Ownership Type',
                             iconData: Icons.business,
-                            t: ownershipController),
+                            t: ownershipController,
+                            numKey: false),
                         InfoField(
-                            text: 'Area',
-                            iconData: Icons.square_foot,
-                            t: areaController),
-                        InfoField(
-                            text: 'Configuration',
+                            text: 'BHK',
                             iconData: Icons.weekend,
-                            t: configurationController),
+                            t: configurationController,
+                            numKey: true),
                         InfoField(
                             text: 'Parking',
                             iconData: Icons.local_parking,
-                            t: parkingController),
+                            t: parkingController,
+                            numKey: true),
                         InfoField(
                             text: 'Number of Bedrooms',
                             iconData: Icons.bed,
-                            t: bedroomController),
+                            t: bedroomController,
+                            numKey: true),
                         InfoField(
                             text: 'Number of Bathrooms',
                             iconData: Icons.bathroom,
-                            t: bathroomController),
+                            t: bathroomController,
+                            numKey: true),
                         InfoField(
-                            text: 'Owner Name',
-                            iconData: Icons.person,
-                            t: ownerController),
+                          text: 'Description',
+                          iconData: Icons.description,
+                          t: descriptionController,
+                          numKey: false,
+                        ),
+                        InfoField(
+                          text: 'Owner Name',
+                          iconData: Icons.person,
+                          t: ownerController,
+                          numKey: false,
+                        ),
                         InfoField(
                             text: 'Owner\'s email',
                             iconData: Icons.mail,
-                            t: emailController),
+                            t: emailController,
+                            numKey: false),
                         InfoField(
                             text: 'Owner\'s Phone Number',
                             iconData: Icons.phone,
-                            t: numberController),
-                        InfoField(
-                            text: 'Description',
-                            iconData: Icons.description,
-                            t: descriptionController),
+                            t: numberController,
+                            numKey: true),
                         Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Center(
@@ -218,15 +234,21 @@ class _AddPropertyPageState extends State<AddPropertyPage> {
 class InfoField extends StatelessWidget {
   final String text;
   final IconData iconData;
+  final bool numKey;
   final TextEditingController t;
   const InfoField(
-      {super.key, required this.text, required this.iconData, required this.t});
+      {super.key,
+      required this.text,
+      required this.numKey,
+      required this.iconData,
+      required this.t});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
       child: TextField(
+        keyboardType: numKey ? TextInputType.number : TextInputType.text,
         controller: t,
         decoration: InputDecoration(
           prefixIcon: Icon(iconData),

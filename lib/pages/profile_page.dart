@@ -52,86 +52,88 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Scaffold(
           body: Center(
         child: LayoutBuilder(
-          builder: (context, constraints) => Column(
-            children: [
-              SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: CircleAvatar(
-                        foregroundColor: Colors.black,
-                        radius: constraints.maxWidth * .16,
-                        backgroundColor: Colors.white,
-                        child: Icon(
-                          Icons.person,
-                          size: constraints.maxWidth * .17,
+          builder: (context, constraints) => SingleChildScrollView(
+            child: Column(
+              children: [
+                SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: CircleAvatar(
+                          foregroundColor: Colors.black,
+                          radius: constraints.maxWidth * .16,
+                          backgroundColor: Colors.white,
+                          child: Icon(
+                            Icons.person,
+                            size: constraints.maxWidth * .17,
+                          ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Card(
-                        elevation: 5,
-                        child: SizedBox(
-                          width: constraints.maxWidth,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Name',
-                                  style: textStyle,
-                                ),
-                                TextField(
-                                  enabled: false,
-                                  decoration:
-                                      InputDecoration(labelText: map['name']),
-                                ),
-                                Text(
-                                  'Email',
-                                  style: textStyle,
-                                ),
-                                TextField(
-                                  enabled: false,
-                                  decoration:
-                                      InputDecoration(labelText: map['email']),
-                                ),
-                                Text(
-                                  'Phone',
-                                  style: textStyle,
-                                ),
-                                TextField(
-                                  enabled: false,
-                                  decoration:
-                                      InputDecoration(labelText: map['phone']),
-                                ),
-                              ],
+                      Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Card(
+                          elevation: 5,
+                          child: SizedBox(
+                            width: constraints.maxWidth,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Name',
+                                    style: textStyle,
+                                  ),
+                                  TextField(
+                                    enabled: false,
+                                    decoration:
+                                        InputDecoration(labelText: map['name']),
+                                  ),
+                                  Text(
+                                    'Email',
+                                    style: textStyle,
+                                  ),
+                                  TextField(
+                                    enabled: false,
+                                    decoration: InputDecoration(
+                                        labelText: map['email']),
+                                  ),
+                                  Text(
+                                    'Phone',
+                                    style: textStyle,
+                                  ),
+                                  TextField(
+                                    enabled: false,
+                                    decoration: InputDecoration(
+                                        labelText: map['phone']),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    ElevatedButton(
-                        onPressed: () async {
-                          await Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => EditProfilePage()));
+                      ElevatedButton(
+                          onPressed: () async {
+                            await Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => EditProfilePage()));
 
-                          map = await getUserDetails();
-                          print(map);
-                          setState(() {});
-                        },
-                        child: Text(
-                          'Edit',
-                          style: textStyle.copyWith(fontSize: 15),
-                        )),
-                  ],
+                            map = await getUserDetails();
+                            print(map);
+                            setState(() {});
+                          },
+                          child: Text(
+                            'Edit',
+                            style: textStyle.copyWith(fontSize: 15),
+                          )),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       )),

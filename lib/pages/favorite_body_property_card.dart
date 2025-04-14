@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:real_estate_management_system/pages/favorite_provider.dart';
 
 import 'package:real_estate_management_system/pages/favorites_property_details.dart';
 import 'package:real_estate_management_system/property_details_provider.dart';
@@ -24,6 +25,22 @@ class FavoriteBodyPropertyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<FavoriteProvider>(context, listen: false);
+    final propertyId =
+        (provider.list.isNotEmpty && index < provider.list.length)
+            ? provider.list[index]['property_id'] as int?
+            : null;
+
+    final imagePath = (propertyId != null &&
+            provider.images[propertyId] != null &&
+            provider.images[propertyId]!.isNotEmpty)
+        ? provider.images[propertyId]![0]
+        : null;
+
+    final imageUrl = imagePath != null
+        ? 'https://real-estate-flask-api.onrender.com$imagePath'
+        : 'https://via.placeholder.com/150';
+
     // print('hey');
     // print(Provider.of<FavoriteProvider>(context, listen: false)
     //     .images[propertyId]);
@@ -40,9 +57,10 @@ class FavoriteBodyPropertyCard extends StatelessWidget {
         // color: Colors.black87,
         // borderRadius: BorderRadius.circular(20),
         child: Card(
+          color: Color(0xcfd8e2dc),
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(5),
-              side: BorderSide(color: Colors.black, width: 01)),
+              borderRadius: BorderRadius.circular(10),
+              side: BorderSide(color: Colors.black, width: 0)),
           surfaceTintColor: Colors.white70,
 
           margin: EdgeInsets.all(10),
@@ -59,11 +77,14 @@ class FavoriteBodyPropertyCard extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Image.network(Provider.of<PropertyDetailsProvider>(
-                                  context,
-                                  listen: false)
-                              .images[propertyId]?[0] ??
-                          '')
+                      child: SizedBox(
+                        height: 200,
+                        width: double.infinity,
+                        child: Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                        ),
+                      )
 
                       // child: Image.network(image)
                       )),

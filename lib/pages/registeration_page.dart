@@ -18,6 +18,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final passwordController = TextEditingController();
   final nameController = TextEditingController();
   final phoneController = TextEditingController();
+  String? errorMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -33,26 +34,46 @@ class _RegistrationPageState extends State<RegistrationPage> {
           ),
           Center(
             child: !buttonClicked
-                ? Column(
-                    children: [
-                      const Spacer(flex: 2),
-                      const Text(
-                        'Register',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 50),
-                      ),
-                      const Spacer(),
-                      _buildTextField(
-                          Icons.person, 'Full Name', nameController),
-                      _buildTextField(
-                          Icons.phone, 'Phone Number', phoneController),
-                      _buildTextField(Icons.mail, 'Email', emailController),
-                      _buildTextField(
-                          Icons.password, 'Password', passwordController,
-                          obscureText: true),
-                      _buildRegisterButton(),
-                      const Spacer(flex: 2),
-                    ],
+                ? SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 60,
+                        ),
+                        const Text(
+                          'Register',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 50),
+                        ),
+                        SizedBox(
+                          height: 30,
+                        ),
+                        _buildTextField(
+                            Icons.person, 'Full Name', nameController),
+                        _buildTextField(
+                            Icons.phone, 'Phone Number', phoneController),
+                        _buildTextField(Icons.mail, 'Email', emailController),
+                        _buildTextField(
+                            Icons.password, 'Password', passwordController,
+                            obscureText: true),
+                        if (errorMessage != null)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8.0, horizontal: 16.0),
+                            child: Text(
+                              errorMessage!,
+                              style: TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        _buildRegisterButton(),
+                        SizedBox(
+                          height: 60,
+                        ),
+                      ],
+                    ),
                   )
                 : CircularProgressIndicator(),
           ),
@@ -62,9 +83,37 @@ class _RegistrationPageState extends State<RegistrationPage> {
   }
 
   Future<void> createUser() async {
-    await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim());
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim());
+      // Reset error message if successful
+      setState(() {
+        errorMessage = null;
+      });
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        switch (e.code) {
+          case 'email-already-in-use':
+            errorMessage = 'An account already exists with this email.';
+            break;
+          case 'invalid-email':
+            errorMessage = 'Please enter a valid email address.';
+            break;
+          case 'weak-password':
+            errorMessage =
+                'Password is too weak. Please use a stronger password.';
+            break;
+          case 'operation-not-allowed':
+            errorMessage = 'Email/password registration is not enabled.';
+            break;
+          default:
+            errorMessage = 'Registration failed: ${e.message}';
+        }
+      });
+      // Re-throw to be caught by the calling function
+      throw e;
+    }
   }
 
   Widget _buildTextField(IconData icon, String hint, TextEditingController t,
@@ -105,18 +154,31 @@ class _RegistrationPageState extends State<RegistrationPage> {
     };
     print("Sending Data: ${jsonEncode(data)}"); // Debugging
 
-    final response = await http.post(
-      url,
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-      body: jsonEncode(data),
-    );
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      print("Success: ${response.body}");
-    } else {
-      print("Error: ${response.statusCode} - ${response.body}");
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: jsonEncode(data),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print("Success: ${response.body}");
+      } else {
+        print("Error: ${response.statusCode} - ${response.body}");
+        setState(() {
+          errorMessage = "Failed to create user profile. Please try again.";
+        });
+        throw Exception("API error: ${response.statusCode}");
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage =
+            "Network error. Please check your connection and try again.";
+      });
+      throw e;
     }
   }
 
@@ -136,6 +198,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             : () async {
                 setState(() {
                   buttonClicked = true;
+                  errorMessage = null; // Clear previous errors
                 });
 
                 try {
@@ -146,6 +209,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   await addUserToDataBase();
 
                   Navigator.of(context).pop();
+                } catch (e) {
+                  // The specific error messages are already set in the respective methods
+                  print("Registration error: $e");
                 } finally {
                   setState(() {
                     buttonClicked = false;

@@ -18,6 +18,38 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+class SidebarButton extends StatelessWidget {
+  final IconData icondata;
+  final String text;
+  final Widget page;
+  final VoidCallback onTap;
+
+  const SidebarButton(
+    this.icondata,
+    this.text,
+    this.page, {
+    Key? key,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icondata, color: Colors.black87),
+      title: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.black87,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      trailing: const Icon(Icons.chevron_right, color: Colors.black54),
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+    );
+  }
+}
+
 class _HomePageState extends State<HomePage> {
   late Widget currentBody;
   late String appBarHeading;
@@ -90,104 +122,102 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       drawer: Drawer(
-          child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            height: 40,
-          ),
-          SidebarButton(Icons.person, 'Profile Page', ProfilePage(), onTap: () {
-            Navigator.pop(context);
-            if (currentBody.runtimeType != ProfilePage) {
-              setState(() {
-                currentBody = ProfilePage();
-                appBarHeading = "Profile";
-              });
-            }
-          }),
-          SidebarButton(
-            Icons.home,
-            'See Properties',
-            PropertyListingPage(),
-            onTap: () {
-              Navigator.pop(context); // Close drawer first
-
-              if (currentBody.runtimeType != PropertyListingPage) {
-                setState(() {
-                  currentBody = PropertyListingPage();
-                  appBarHeading = "Properties";
-                  x = 0;
-                });
-              }
-            },
-          ),
-          SidebarButton(
-            Icons.business,
-            'Sell Property',
-            ChangeNotifierProvider(
-                create: (context) => PropertyidProvider(),
-                child: AddPropertyPage()),
-            onTap: () {
-              Navigator.pop(context);
-
-              if (currentBody.runtimeType != AddPropertyPage) {
-                setState(() {
-                  currentBody = AddPropertyPage();
-                  appBarHeading = "Sell Property";
-                  x = 3;
-                });
-              }
-            },
-          ),
-          SidebarButton(
-            Icons.key,
-            'Owned Properties',
-            OwnedPropertyPage(),
-            onTap: () {
-              Navigator.pop(context);
-
-              if (currentBody.runtimeType != OwnedPropertyPage) {
-                setState(() {
-                  currentBody = OwnedPropertyPage();
-                  appBarHeading = "Owned Properties";
-                  x = 3;
-                });
-              }
-            },
-          ),
-          SidebarButton(
-            Icons.currency_rupee,
-            'Negotiation',
-            NegotiationPage(),
-            onTap: () {
-              Navigator.pop(context);
-              if (currentBody.runtimeType != NegotiationPage) {
-                currentBody = NegotiationPage();
-                appBarHeading = "Negotiation Page";
-                x = 3;
-                setState(() {});
-              }
-            },
-          ),
-          SidebarButton(
-              Icons.house_siding_sharp, 'Schedule Visits', VisitPage(),
-              onTap: () {
-            Navigator.pop(context);
-            if (currentBody.runtimeType != VisitPage) {
-              currentBody = VisitPage();
-              appBarHeading = "Schedule Visits";
-              x = 3;
-              setState(() {});
-            }
-          }),
-          Spacer(),
-          SidebarButton(Icons.logout, 'LogOut', widget, onTap: () async {
-            Navigator.of(context).pop();
-            FirebaseAuth.instance.signOut();
-            // Navigator.of(context).pop();
-          })
-        ],
-      )),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 40),
+                    SidebarButton(Icons.person, 'Profile Page', ProfilePage(),
+                        onTap: () {
+                      Navigator.pop(context);
+                      if (currentBody.runtimeType != ProfilePage) {
+                        setState(() {
+                          currentBody = ProfilePage();
+                          appBarHeading = "Profile";
+                          x = 3;
+                        });
+                      }
+                    }),
+                    SidebarButton(
+                        Icons.home, 'See Properties', PropertyListingPage(),
+                        onTap: () {
+                      Navigator.pop(context);
+                      if (currentBody.runtimeType != PropertyListingPage) {
+                        setState(() {
+                          currentBody = PropertyListingPage();
+                          appBarHeading = "Properties";
+                          x = 0;
+                        });
+                      }
+                    }),
+                    SidebarButton(
+                      Icons.business,
+                      'Sell Property',
+                      ChangeNotifierProvider(
+                        create: (context) => PropertyidProvider(),
+                        child: AddPropertyPage(),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        if (currentBody.runtimeType != AddPropertyPage) {
+                          setState(() {
+                            currentBody = AddPropertyPage();
+                            appBarHeading = "Sell Property";
+                            x = 3;
+                          });
+                        }
+                      },
+                    ),
+                    SidebarButton(
+                        Icons.key, 'Owned Properties', OwnedPropertyPage(),
+                        onTap: () {
+                      Navigator.pop(context);
+                      if (currentBody.runtimeType != OwnedPropertyPage) {
+                        setState(() {
+                          currentBody = OwnedPropertyPage();
+                          appBarHeading = "Owned Properties";
+                          x = 3;
+                        });
+                      }
+                    }),
+                    SidebarButton(
+                        Icons.currency_rupee, 'Negotiation', NegotiationPage(),
+                        onTap: () {
+                      Navigator.pop(context);
+                      if (currentBody.runtimeType != NegotiationPage) {
+                        setState(() {
+                          currentBody = NegotiationPage();
+                          appBarHeading = "Negotiation Page";
+                          x = 3;
+                        });
+                      }
+                    }),
+                    SidebarButton(Icons.house_siding_sharp, 'Schedule Visits',
+                        VisitPage(), onTap: () {
+                      Navigator.pop(context);
+                      if (currentBody.runtimeType != VisitPage) {
+                        setState(() {
+                          currentBody = VisitPage();
+                          appBarHeading = "Schedule Visits";
+                          x = 3;
+                        });
+                      }
+                    }),
+                  ],
+                ),
+              ),
+            ),
+            SidebarButton(Icons.logout, 'LogOut', widget, onTap: () async {
+              Navigator.of(context).pop();
+              await FirebaseAuth.instance.signOut();
+            }),
+            SizedBox(height: 20),
+          ],
+        ),
+      ),
       body: Stack(children: [
         Positioned.fill(
           child: Image.asset(

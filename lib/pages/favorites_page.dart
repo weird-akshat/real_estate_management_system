@@ -14,28 +14,26 @@ class FavoritesPage extends StatelessWidget {
   @override
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: FutureBuilder(
-        future: fetchFavDatawithImages(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else {
-            // print(snapshot.data.body);
-            var data = snapshot.data!;
-            Provider.of<FavoriteProvider>(context, listen: false)
-                .addPropertiesFromApi(data.properties);
-            Provider.of<FavoriteProvider>(context, listen: false)
-                .addImagesFromApi(data.images);
+    return FutureBuilder(
+      future: fetchFavDatawithImages(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else {
+          // print(snapshot.data.body);
+          var data = snapshot.data!;
+          Provider.of<FavoriteProvider>(context, listen: false)
+              .addPropertiesFromApi(data.properties);
+          Provider.of<FavoriteProvider>(context, listen: false)
+              .addImagesFromApi(data.images);
 
-            // print(Provider.of<PropertyDetailsProvider>(context).images);
-            // return Text('data');
-            return FavoriteBodyPropertyList(data.properties);
-          }
-        },
-      ),
+          // print(Provider.of<PropertyDetailsProvider>(context).images);
+          // return Text('data');
+          return FavoriteBodyPropertyList(data.properties);
+        }
+      },
     );
   }
 

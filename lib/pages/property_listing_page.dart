@@ -26,28 +26,26 @@ class _PropertyListingPageState extends State<PropertyListingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: FutureBuilder(
-        future: fetchDatawithImages(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else {
-            // print(snapshot.data.body);
-            var data = snapshot.data!;
-            Provider.of<PropertyDetailsProvider>(context, listen: false)
-                .addPropertiesFromApi(data.properties);
-            Provider.of<PropertyDetailsProvider>(context, listen: false)
-                .addImagesFromApi(data.images);
+    return FutureBuilder(
+      future: fetchDatawithImages(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else {
+          // print(snapshot.data.body);
+          var data = snapshot.data!;
+          Provider.of<PropertyDetailsProvider>(context, listen: false)
+              .addPropertiesFromApi(data.properties);
+          Provider.of<PropertyDetailsProvider>(context, listen: false)
+              .addImagesFromApi(data.images);
 
-            // print(Provider.of<PropertyDetailsProvider>(context).images);
+          // print(Provider.of<PropertyDetailsProvider>(context).images);
 
-            return BodyPropertyList(data.properties);
-          }
-        },
-      ),
+          return BodyPropertyList(data.properties);
+        }
+      },
     );
   }
 }
@@ -111,20 +109,6 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
   void initState() {
     super.initState();
     filteredList = List.from(widget.list);
-    chip1 = CategoryChip(
-      label: 'Houses',
-      color: Colors.black,
-    );
-    // chip1.color = Colors.black;
-    chip2 = CategoryChip(
-      label: 'Offices',
-      color: Colors.white,
-    );
-    chip3 = CategoryChip(label: 'Appartments', color: Colors.white);
-    chip4 = CategoryChip(
-      label: 'Bunglows',
-      color: Colors.white,
-    );
   }
 
   // Method to filter properties based on search query
@@ -158,6 +142,7 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
               child: TextField(
                 onChanged: filterProperties,
                 decoration: InputDecoration(
+                  filled: true,
                   enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(5)),
                       borderSide: BorderSide(color: Colors.black, width: 2)),
@@ -215,7 +200,7 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
                         propertyId: filteredList[index]['property_id'],
                         price: filteredList[index]['price'].toString(),
                         area: filteredList[index]['area'],
-                        numBed: filteredList[index]['bedrooms'],
+                        numBed: filteredList[index]['bedrooms'] + " BHK",
                         propertyName: filteredList[index]['name'],
                         onRefresh: refreshPage,
                       );
@@ -295,9 +280,10 @@ class PropertyCard extends StatelessWidget {
         // color: Colors.black87,
         // borderRadius: BorderRadius.circular(20),
         child: Card(
+          color: Color(0xcfd8e2dc),
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(5),
-              side: BorderSide(color: Colors.black, width: 01)),
+              borderRadius: BorderRadius.circular(10),
+              side: BorderSide(color: Colors.black, width: 0)),
           surfaceTintColor: Colors.white70,
 
           margin: EdgeInsets.all(10),
@@ -314,14 +300,20 @@ class PropertyCard extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Image.network(Provider.of<PropertyDetailsProvider>(
-                                  context,
-                                  listen: false)
-                              .images[Provider.of<PropertyDetailsProvider>(
-                                  context,
-                                  listen: false)
-                              .list[index]['property_id']]?[0] ??
-                          '')
+                      child: SizedBox(
+                        height: 200,
+                        width: double.infinity,
+                        child: Image.network(
+                          Provider.of<PropertyDetailsProvider>(context,
+                                      listen: false)
+                                  .images[Provider.of<PropertyDetailsProvider>(
+                                      context,
+                                      listen: false)
+                                  .list[index]['property_id']]?[0] ??
+                              '',
+                          fit: BoxFit.cover,
+                        ),
+                      )
 
                       // child: Image.network(image)
                       )),
@@ -399,64 +391,22 @@ Future<List<Map<String, dynamic>>> fetchData() async {
   }
 }
 
-Future fetchImage(int propertyId) async {
+Future<String> fetchImage(int propertyId) async {
   final url = Uri.parse(
-      'https://real-estate-flask-api.onrender.com/get_property_images?property_id=$propertyId');
+    'https://real-estate-flask-api.onrender.com/get_property_images?property_id=$propertyId',
+  );
 
   final response = await http.get(url);
   if (response.statusCode == 200) {
     var data = jsonDecode(response.body);
-    // print('Response Data: $data');
 
     for (Map<String, dynamic> map in data) {
       if (map['is_primary'] == 'Yes') {
-        // print(map);
-        return map['image_url'];
+        // Make full URL from relative path
+        final imageUrl = map['image_url'];
+        return 'https://real-estate-flask-api.onrender.com$imageUrl';
       }
     }
-  } else {
-    // print('Error: ${response.statusCode}');
   }
-  return response;
-}
-
-class CategoryChip extends StatefulWidget {
-  final Color color;
-  final String label;
-  const CategoryChip({super.key, required this.label, required this.color});
-
-  @override
-  State<CategoryChip> createState() => _CategoryChipState(color);
-}
-
-class _CategoryChipState extends State<CategoryChip> {
-  _CategoryChipState(this.color);
-  late Color color;
-  @override
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        color = color == Colors.white ? Colors.black : Colors.white;
-        setState(() {});
-      },
-      child: Padding(
-        padding: const EdgeInsets.all(5.0),
-        child: Chip(
-          backgroundColor: color,
-          elevation: 10,
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all((Radius.circular(5)))),
-          label: Text(
-            widget.label,
-            style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: color == Colors.white ? Colors.black : Colors.white),
-          ),
-          padding: EdgeInsets.all(15),
-        ),
-      ),
-    );
-  }
+  return '';
 }

@@ -152,43 +152,56 @@ class _NegotiationChatState extends State<OwnerVisitChat> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: kist.length,
-              itemBuilder: (context, index) {
-                if (kist[index]['made_by'] != 'owner') {
-                  return GestureDetector(
-                    onTap: () {
-                      showVisitConfirmationDialog(
-                          context, kist[index]['visit_id']);
-                    },
-                    child: DateChatBox(
+          Positioned.fill(
+              child: Image.asset(
+            'assets/images/loginbackground.jpg',
+            fit: BoxFit.cover,
+          )),
+          Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: kist.length,
+                  itemBuilder: (context, index) {
+                    if (kist[index]['made_by'] != 'owner') {
+                      return GestureDetector(
+                        onTap: () {
+                          showVisitConfirmationDialog(
+                              context, kist[index]['visit_id']);
+                        },
+                        child: DateChatBox(
+                            status: kist[index]['status'],
+                            date: DateTime.parse(kist[index]['date_and_time']),
+                            isUser: kist[index]['made_by'] == 'owner'),
+                      );
+                    }
+
+                    return DateChatBox(
                         status: kist[index]['status'],
                         date: DateTime.parse(kist[index]['date_and_time']),
-                        isUser: kist[index]['made_by'] == 'owner'),
-                  );
-                }
-
-                return DateChatBox(
-                    status: kist[index]['status'],
-                    date: DateTime.parse(kist[index]['date_and_time']),
-                    isUser: kist[index]['made_by'] == 'owner');
-              },
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              ElevatedButton(
-                  onPressed: () async {
-                    // await addVisits();
-                    _showDateTimePicker(context);
+                        isUser: kist[index]['made_by'] == 'owner');
                   },
-                  child: Text('Request Visit')),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  ElevatedButton(
+                    style: ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(Colors.black)),
+                    onPressed: () async {
+                      // await addVisits();
+                      _showDateTimePicker(context);
+                    },
+                    child: Text('Request Visit',
+                        style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              )
             ],
-          )
+          ),
         ],
       ),
     );

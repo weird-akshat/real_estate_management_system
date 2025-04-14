@@ -15,6 +15,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  String? errorMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -28,39 +29,58 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
         Center(
-          child: Column(
-            children: [
-              const Spacer(flex: 3),
-              const Text(
-                'Dwell',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 70),
-              ),
-              const Spacer(flex: 2),
-              _buildTextField(Icons.mail, 'Email', emailController),
-              _buildTextField(Icons.password, 'Password', passwordController,
-                  obscureText: true),
-              _buildLoginButton(context),
-              const SizedBox(height: 10),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const RegistrationPage()),
-                  );
-                  setState(() {});
-                },
-                child: const Text(
-                  'Don\'t have an account? Register',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    decoration: TextDecoration.underline,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                SizedBox(
+                  height: 90,
+                ),
+                const Text(
+                  'Dwell',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 70),
+                ),
+                SizedBox(
+                  height: 60,
+                ),
+                _buildTextField(Icons.mail, 'Email', emailController),
+                _buildTextField(Icons.password, 'Password', passwordController,
+                    obscureText: true),
+                if (errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 16.0),
+                    child: Text(
+                      errorMessage!,
+                      style: TextStyle(
+                          color: Colors.red, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                _buildLoginButton(context),
+                const SizedBox(height: 10),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const RegistrationPage()),
+                    );
+                    setState(() {});
+                  },
+                  child: const Text(
+                    'Don\'t have an account? Register',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.underline,
+                    ),
                   ),
                 ),
-              ),
-              const Spacer(flex: 3),
-            ],
+                SizedBox(
+                  height: 90,
+                ),
+              ],
+            ),
           ),
         )
       ]),
@@ -68,13 +88,43 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> login() async {
+    setState(() {
+      errorMessage = null; // Clear previous error messages
+    });
+
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
+      // Login successful, navigate to next screen or handle as needed
     } on FirebaseAuthException catch (e) {
-      print(e.message);
+      setState(() {
+        // Display user-friendly error message
+        switch (e.code) {
+          case 'user-not-found':
+            errorMessage = 'No user found with this email.';
+            break;
+          case 'wrong-password':
+            errorMessage = 'Incorrect password. Please try again.';
+            break;
+          case 'invalid-email':
+            errorMessage = 'Please enter a valid email address.';
+            break;
+          case 'user-disabled':
+            errorMessage = 'This account has been disabled.';
+            break;
+          case 'too-many-requests':
+            errorMessage = 'Too many login attempts. Please try again later.';
+            break;
+          default:
+            errorMessage = 'Login failed: ${e.message}';
+        }
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = 'An unexpected error occurred. Please try again.';
+      });
     }
   }
 
@@ -116,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
           fixedSize: const WidgetStatePropertyAll(Size(300, 50)),
         ),
         onPressed: () async {
-          login();
+          await login();
         },
         child: const Text(
           'Login',

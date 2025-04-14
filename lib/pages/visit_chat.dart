@@ -152,42 +152,58 @@ class _NegotiationChatState extends State<VisitChat> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
+      body: Stack(
         children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: kist.length,
-              itemBuilder: (context, index) {
-                if (kist[index]['made_by'] != 'buyer') {
-                  return GestureDetector(
-                    onTap: () {
-                      showVisitConfirmationDialog(
-                          context, kist[index]['visit_id']);
-                    },
-                    child: DateChatBox(
-                        status: kist[index]['status'],
-                        date: DateTime.parse(kist[index]['date_and_time']),
-                        isUser: kist[index]['made_by'] == 'buyer'),
-                  );
-                }
-                return DateChatBox(
-                    status: kist[index]['status'],
-                    date: DateTime.parse(kist[index]['date_and_time']),
-                    isUser: kist[index]['made_by'] == 'buyer');
-              },
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/loginbackground.jpg',
+              fit: BoxFit.fitHeight,
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+          Column(
             children: [
-              ElevatedButton(
-                  onPressed: () async {
-                    // await addVisits();
-                    _showDateTimePicker(context);
+              Expanded(
+                child: ListView.builder(
+                  itemCount: kist.length,
+                  itemBuilder: (context, index) {
+                    if (kist[index]['made_by'] != 'buyer') {
+                      return GestureDetector(
+                        onTap: () {
+                          showVisitConfirmationDialog(
+                              context, kist[index]['visit_id']);
+                        },
+                        child: DateChatBox(
+                            status: kist[index]['status'],
+                            date: DateTime.parse(kist[index]['date_and_time']),
+                            isUser: kist[index]['made_by'] == 'buyer'),
+                      );
+                    }
+                    return DateChatBox(
+                        status: kist[index]['status'],
+                        date: DateTime.parse(kist[index]['date_and_time']),
+                        isUser: kist[index]['made_by'] == 'buyer');
                   },
-                  child: Text('Request Visit')),
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor:
+                              WidgetStatePropertyAll(Colors.black)),
+                      onPressed: () async {
+                        // await addVisits();
+                        _showDateTimePicker(context);
+                      },
+                      child: Text(
+                        'Request Visit',
+                        style: TextStyle(color: Colors.white),
+                      )),
+                ],
+              )
             ],
-          )
+          ),
         ],
       ),
     );

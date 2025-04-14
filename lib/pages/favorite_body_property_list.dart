@@ -23,20 +23,6 @@ class _FavoriteBodyPropertyListState extends State<FavoriteBodyPropertyList> {
   @override
   void initState() {
     super.initState();
-    chip1 = CategoryChip(
-      label: 'Houses',
-      color: Colors.black,
-    );
-    // chip1.color = Colors.black;
-    chip2 = CategoryChip(
-      label: 'Offices',
-      color: Colors.white,
-    );
-    chip3 = CategoryChip(label: 'Appartments', color: Colors.white);
-    chip4 = CategoryChip(
-      label: 'Bunglows',
-      color: Colors.white,
-    );
   }
 
   @override
@@ -45,19 +31,23 @@ class _FavoriteBodyPropertyListState extends State<FavoriteBodyPropertyList> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: ListView.builder(
-              itemCount: widget.list.length,
-              itemBuilder: (context, index) {
-                return FavoriteBodyPropertyCard(
-                  index: index,
-                  propertyId: widget.list[index]['property_id'],
-                  price: widget.list[index]['price'],
-                  area: widget.list[index]['area'],
-                  numBed: widget.list[index]['bedrooms'],
-                  propertyName: widget.list[index]['name'],
-                  onRefresh: refreshPage,
-                );
-              }),
+          child: widget.list.length == 0
+              ? Center(
+                  child: Text('No Favourites Found'),
+                )
+              : ListView.builder(
+                  itemCount: widget.list.length,
+                  itemBuilder: (context, index) {
+                    return FavoriteBodyPropertyCard(
+                      index: index,
+                      propertyId: widget.list[index]['property_id'],
+                      price: widget.list[index]['price'],
+                      area: widget.list[index]['area'],
+                      numBed: widget.list[index]['bedrooms'] + " BHK",
+                      propertyName: widget.list[index]['name'],
+                      onRefresh: refreshPage,
+                    );
+                  }),
         )
       ],
     );

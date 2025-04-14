@@ -16,11 +16,22 @@ class _ImageViewScreenState extends State<ImageViewScreen> {
 
   Future<List<dynamic>> fetchImages(int propertyId) async {
     final url = Uri.parse(
-        'https://real-estate-flask-api.onrender.com/get_property_images?property_id=$propertyId');
+      'https://real-estate-flask-api.onrender.com/get_property_images?property_id=$propertyId',
+    );
 
     final response = await http.get(url);
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final List<dynamic> data = jsonDecode(response.body);
+
+      final baseUrl = 'https://real-estate-flask-api.onrender.com';
+      for (var item in data) {
+        if (item['image_url'] != null &&
+            item['image_url'].toString().startsWith('/')) {
+          item['image_url'] = '$baseUrl${item['image_url']}';
+        }
+      }
+
+      return data;
     } else {
       return [];
     }
@@ -39,6 +50,9 @@ class _ImageViewScreenState extends State<ImageViewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       body: Center(
         child: Column(
@@ -56,9 +70,14 @@ class _ImageViewScreenState extends State<ImageViewScreen> {
               },
               child: LayoutBuilder(
                 builder: (context, constraints) => SizedBox(
+                  width: screenWidth * 0.8, // 80% of screen width
+                  height: screenHeight * 0.6, // 60% of screen height
                   child: index == -1 || list.isEmpty
                       ? CircularProgressIndicator()
-                      : Image.network(list[index]['image_url']),
+                      : Image.network(
+                          list[index]['image_url'],
+                          fit: BoxFit.fitWidth,
+                        ),
                 ),
               ),
             ),

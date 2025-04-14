@@ -127,7 +127,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                           ),
                           SizedBox(height: 8),
                           Text(
-                            list['price'].toString(),
+                            '₹${list['price']}',
                             style: TextStyle(
                                 fontSize: 25 * textScaleFactor,
                                 fontWeight: FontWeight.bold),
@@ -270,35 +270,54 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   Widget _buildOverviewContent(
       Map<String, dynamic> list, double textScaleFactor) {
     final textSize = 17 * textScaleFactor;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildIconText(Icons.house, list['property_type'], textSize),
-            _buildIconText(
-                Icons.price_change, list['price'].toString(), textSize),
-            _buildIconText(Icons.location_city, list['city'], textSize),
-          ],
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildIconText(Icons.square_foot, list['area'], textSize),
-            _buildIconText(Icons.bed, list['bedrooms'], textSize),
-            _buildIconText(Icons.balcony, list['balcony'], textSize),
-          ],
-        ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildIconText(Icons.local_parking, list['parking'], textSize),
-            _buildIconText(Icons.location_on, list['state'], textSize),
-            _buildIconText(Icons.flag, list['country'], textSize),
-          ],
-        ),
-      ],
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildIconText(Icons.place, list['area'], textSize),
+              _buildIconText(Icons.house, list['property_type'], textSize),
+              _buildIconText(
+                  // ignore: prefer_interpolation_to_compose_strings
+                  Icons.bed,
+                  'Bedrooms: ' + list['bedrooms'],
+                  textSize),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildIconText(Icons.location_city, list['city'], textSize),
+                _buildIconText(
+                    Icons.price_change, list['price'].toString(), textSize),
+                _buildIconText(
+                    // ignore: prefer_interpolation_to_compose_strings
+                    Icons.balcony,
+                    'Balconies: ' + list['balcony'],
+                    textSize),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildIconText(Icons.map, list['state'], textSize),
+              _buildIconText(Icons.flag, list['country'], textSize),
+              _buildIconText(
+                  // ignore: prefer_interpolation_to_compose_strings
+                  Icons.local_parking,
+                  // ignore: prefer_interpolation_to_compose_strings
+                  'Parking: ' + list['parking'],
+                  textSize),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
