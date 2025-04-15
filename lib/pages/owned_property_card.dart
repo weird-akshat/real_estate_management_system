@@ -42,7 +42,7 @@ class OwnedPropertyCard extends StatelessWidget {
         onRefresh();
       },
       child: Card(
-        color: Color(0xcfd8e2dc),
+        color: Color(0xffd8e2dc),
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
             side: BorderSide(color: Colors.black, width: 0)),

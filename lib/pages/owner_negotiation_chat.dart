@@ -247,7 +247,7 @@ class _NegotiationChatState extends State<OwnerNegotiationChat> {
                         },
                         child: PaymentChatTile(
                           price: double.parse(list[index]['amount'].toString()),
-                          date: parseDate(list[index]['offer_date']),
+                          // date: parseDate(list[index]['offer_date']),
                           status: list[index]['offer_status'],
                           isBuyer: list[index]['made_by'] != 'buyer',
                         ),
@@ -255,7 +255,7 @@ class _NegotiationChatState extends State<OwnerNegotiationChat> {
                     }
                     return PaymentChatTile(
                       price: double.parse(list[index]['amount'].toString()),
-                      date: parseDate(list[index]['offer_date']),
+                      // date: parseDate(list[index]['offer_date']),
                       status: list[index]['offer_status'],
                       isBuyer: list[index]['made_by'] != 'buyer',
                     );
@@ -390,14 +390,14 @@ class _MakeOfferDialogState extends State<MakeOfferDialog> {
 // PaymentChatTile with improved styling
 class PaymentChatTile extends StatelessWidget {
   final double price;
-  final DateTime date;
+  // final DateTime date;
   final String status;
   final bool isBuyer;
 
   const PaymentChatTile({
     Key? key,
     required this.price,
-    required this.date,
+    // required this.date,
     required this.status,
     required this.isBuyer,
   }) : super(key: key);
@@ -468,16 +468,16 @@ class PaymentChatTile extends StatelessWidget {
                 const SizedBox(height: 4),
 
                 // Date
-                Text(
-                  '• ${DateFormat('MMM dd, hh:mm a').format(date)}',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isBuyer
-                        ? const Color(0xFF3399FF) // Bright Blue
-                        : const Color(0xFF9933FF), // Bright Purple
-                  ),
-                ),
+                // Text(
+                //   // '• ${DateFormat('MMM dd, hh:mm a').format(date)}',
+                //   textAlign: TextAlign.center,
+                //   style: TextStyle(
+                //     fontSize: 12,
+                //     color: isBuyer
+                //         ? const Color(0xFF3399FF) // Bright Blue
+                //         : const Color(0xFF9933FF), // Bright Purple
+                //   ),
+                // ),
               ],
             ),
           ),

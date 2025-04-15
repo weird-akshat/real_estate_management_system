@@ -57,7 +57,7 @@ class FavoriteBodyPropertyCard extends StatelessWidget {
         // color: Colors.black87,
         // borderRadius: BorderRadius.circular(20),
         child: Card(
-          color: Color(0xcfd8e2dc),
+          color: Color(0xffd8e2dc),
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
               side: BorderSide(color: Colors.black, width: 0)),

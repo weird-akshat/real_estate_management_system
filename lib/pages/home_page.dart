@@ -221,7 +221,7 @@ class _HomePageState extends State<HomePage> {
       body: Stack(children: [
         Positioned.fill(
           child: Image.asset(
-            'assets/images/background.jpg',
+            'assets/images/bg2.jpg',
             fit: BoxFit.cover,
           ),
         ),
