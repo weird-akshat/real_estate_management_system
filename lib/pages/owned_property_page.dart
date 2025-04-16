@@ -15,45 +15,63 @@ class OwnedPropertyPage extends StatefulWidget {
 }
 
 class _OwnedPropertyPageState extends State<OwnedPropertyPage> {
+  bool _isLoading = true;
+  List<Map<String, dynamic>> list = [];
+
   void refreshPage() {
     setState(() {});
   }
 
-  List<Map<String, dynamic>> list = [];
   @override
   void initState() {
     super.initState();
-    Future.microtask(() =>
-        Provider.of<OwnedPropertiesProvider>(context, listen: false)
-            .getOwnedProperties());
+    _loadProperties();
+  }
+
+  Future<void> _loadProperties() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    await Provider.of<OwnedPropertiesProvider>(context, listen: false)
+        .getOwnedProperties();
+
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     list = Provider.of<OwnedPropertiesProvider>(context).properties;
     print(list);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: list.isEmpty
-              ? Center(
-                  child: Text('No Properties Owned'),
+          child: _isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(),
                 )
-              : ListView.builder(
-                  itemCount: list.length,
-                  itemBuilder: (context, index) {
-                    return OwnedPropertyCard(
-                      index: index,
-                      propertyId: list[index]['property_id'],
-                      price: list[index]['price'].toString(),
-                      area: list[index]['area'],
-                      numBed: list[index]['bedrooms'] + " BHK",
-                      propertyName: list[index]['name'],
-                      onRefresh: refreshPage,
-                    );
-                  },
-                ),
+              : list.isEmpty
+                  ? const Center(
+                      child: Text('No Properties Owned'),
+                    )
+                  : ListView.builder(
+                      itemCount: list.length,
+                      itemBuilder: (context, index) {
+                        return OwnedPropertyCard(
+                          index: index,
+                          propertyId: list[index]['property_id'],
+                          price: list[index]['price'].toString(),
+                          area: list[index]['area'],
+                          numBed: list[index]['bedrooms'] + " BHK",
+                          propertyName: list[index]['name'],
+                          onRefresh: refreshPage,
+                        );
+                      },
+                    ),
         )
       ],
     );

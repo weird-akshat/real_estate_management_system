@@ -155,29 +155,21 @@ class _FilterPageState extends State<FilterPage> {
                     string: 'Bedrooms',
                     numKey: true,
                   ),
-                  FilterCards(
-                    icon: Icons.bathroom,
-                    t: bathController,
-                    string: 'Bathrooms',
-                    numKey: true,
-                  ),
-                  FilterCards(
-                    icon: Icons.balcony,
-                    t: balconyController,
-                    string: 'Balcony',
-                    numKey: true,
-                  ),
-                  FilterCards(
-                    icon: Icons.local_parking,
-                    t: parkingController,
-                    string: 'Parking',
-                    numKey: true,
-                  ),
                   ElevatedButton(
                     onPressed: () async {
                       var result = await fetchDatawithImages();
                       if (result.properties.isNotEmpty) {
-                        if (mounted) Navigator.of(context).pop();
+                        if (mounted) {
+                          // Make sure we're updating the provider
+                          Provider.of<PropertyDetailsProvider>(context,
+                                  listen: false)
+                              .addPropertiesFromApi(result.properties);
+                          Provider.of<PropertyDetailsProvider>(context,
+                                  listen: false)
+                              .addImagesFromApi(result.images);
+
+                          Navigator.of(context).pop();
+                        }
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('No properties found')),

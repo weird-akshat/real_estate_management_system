@@ -13,44 +13,88 @@ class NegotiationPage extends StatefulWidget {
   State<NegotiationPage> createState() => _NegotiationPageState();
 }
 
+// NEGOTIATION PAGE
 class _NegotiationPageState extends State<NegotiationPage> {
   void onRefresh() {
     setState(() {});
   }
 
   List<Map<String, dynamic>> list = [];
+  bool _isLoading = true; // Add loading state
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() async {
-      List<Map<String, dynamic>> fetchedList = await fetchProperties();
-      setState(() {
-        list = fetchedList;
-      });
+    _fetchData();
+  }
+
+  // Separate method to fetch data
+  Future<void> _fetchData() async {
+    setState(() {
+      _isLoading = true;
     });
+
+    try {
+      List<Map<String, dynamic>> fetchedList = await fetchProperties();
+      if (mounted) {
+        setState(() {
+          list = fetchedList;
+          _isLoading = false;
+        });
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error loading properties: $error')));
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (list.length == 0) {
+    // Show loading indicator when fetching data
+    if (_isLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Loading properties...')
+          ],
+        ),
+      );
+    }
+
+    // Show message if no properties found
+    if (list.isEmpty) {
       return Center(
         child: Text('No Property Found'),
       );
     }
-    return ListView.builder(
-        itemCount: list.length,
-        itemBuilder: (context, index) => NegotiationBodyPropertyCard(
-            image: list[index]['image_url'].startsWith('http')
-                ? list[index]['image_url']
-                : 'https://real-estate-flask-api.onrender.com${list[index]['image_url']}',
-            index: index,
-            propertyId: int.parse(list[index]['property_id'].toString()),
-            price: list[index]['price'].toString(),
-            area: list[index]['area'].toString(),
-            numBed: list[index]['bedrooms'].toString() + " BHK",
-            propertyName: list[index]['name'].toString(),
-            onRefresh: onRefresh));
+
+    // Show property list
+    return RefreshIndicator(
+      onRefresh: () async {
+        await _fetchData();
+      },
+      child: ListView.builder(
+          itemCount: list.length,
+          itemBuilder: (context, index) => NegotiationBodyPropertyCard(
+              image: list[index]['image_url'].startsWith('http')
+                  ? list[index]['image_url']
+                  : 'https://real-estate-flask-api.onrender.com${list[index]['image_url']}',
+              index: index,
+              propertyId: int.parse(list[index]['property_id'].toString()),
+              price: list[index]['price'].toString(),
+              area: list[index]['area'].toString(),
+              numBed: list[index]['bedrooms'].toString() + " BHK",
+              propertyName: list[index]['name'].toString(),
+              onRefresh: onRefresh)),
+    );
   }
 }
 

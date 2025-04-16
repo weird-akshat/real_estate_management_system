@@ -19,6 +19,8 @@ class PropertyListingPage extends StatefulWidget {
 }
 
 class _PropertyListingPageState extends State<PropertyListingPage> {
+  bool initialLoad = true;
+
   @override
   void initState() {
     super.initState();
@@ -26,27 +28,38 @@ class _PropertyListingPageState extends State<PropertyListingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: fetchDatawithImages(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else {
-          // print(snapshot.data.body);
-          var data = snapshot.data!;
-          Provider.of<PropertyDetailsProvider>(context, listen: false)
-              .addPropertiesFromApi(data.properties);
-          Provider.of<PropertyDetailsProvider>(context, listen: false)
-              .addImagesFromApi(data.images);
+    // Access the provider
+    final propertyProvider = Provider.of<PropertyDetailsProvider>(context);
 
-          // print(Provider.of<PropertyDetailsProvider>(context).images);
+    // If it's the initial load or there are no properties in the provider, fetch them
+    if (initialLoad || propertyProvider.list.isEmpty) {
+      return FutureBuilder(
+        future: fetchDatawithImages(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            var data = snapshot.data!;
 
-          return BodyPropertyList(data.properties);
-        }
-      },
-    );
+            // Only update if we're doing initial load
+            if (initialLoad) {
+              Provider.of<PropertyDetailsProvider>(context, listen: false)
+                  .addPropertiesFromApi(data.properties);
+              Provider.of<PropertyDetailsProvider>(context, listen: false)
+                  .addImagesFromApi(data.images);
+              initialLoad = false;
+            }
+
+            return BodyPropertyList(propertyProvider.list);
+          }
+        },
+      );
+    } else {
+      // If we already have data in the provider, just use that
+      return BodyPropertyList(propertyProvider.list);
+    }
   }
 }
 
@@ -101,32 +114,53 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
   String searchQuery = '';
   List<Map<String, dynamic>> filteredList = [];
 
-  void refreshPage() {
-    setState(() {});
-  }
-
   @override
   void initState() {
     super.initState();
-    filteredList = List.from(widget.list);
+    // Initialize filtered list that excludes user's own properties
+    updateFilteredList();
+  }
+
+  @override
+  void didUpdateWidget(BodyPropertyList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.list != oldWidget.list) {
+      // If the list changes, update the filter
+      updateFilteredList();
+    }
+  }
+
+  void refreshPage() {
+    setState(() {});
   }
 
   // Method to filter properties based on search query
   void filterProperties(String query) {
     setState(() {
       searchQuery = query.toLowerCase();
-      if (searchQuery.isEmpty) {
-        filteredList = List.from(widget.list);
-      } else {
-        filteredList = widget.list.where((property) {
-          // Check if any field in the property matches the search query
-          return property.entries.any((entry) {
-            if (entry.value == null) return false;
-            return entry.value.toString().toLowerCase().contains(searchQuery);
-          });
-        }).toList();
-      }
+      updateFilteredList();
     });
+  }
+
+  // Helper method to update filtered list
+  void updateFilteredList() {
+    // First exclude user's own properties
+    var nonUserProperties = widget.list.where((property) {
+      return property['owner_id'] != FirebaseAuth.instance.currentUser!.uid;
+    }).toList();
+
+    // Then apply search query if it exists
+    if (searchQuery.isEmpty) {
+      filteredList = nonUserProperties;
+    } else {
+      filteredList = nonUserProperties.where((property) {
+        // Check if any field in the property matches the search query
+        return property.entries.any((entry) {
+          if (entry.value == null) return false;
+          return entry.value.toString().toLowerCase().contains(searchQuery);
+        });
+      }).toList();
+    }
   }
 
   @override
@@ -172,7 +206,10 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
                       return FilterPage();
                     }));
 
-                    setState(() {});
+                    // After returning from filter page, update our local filtered list
+                    setState(() {
+                      updateFilteredList();
+                    });
                   },
                   child: Icon(
                     Icons.tune,
@@ -187,27 +224,20 @@ class _BodyPropertyListState extends State<BodyPropertyList> {
               : ListView.builder(
                   itemCount: filteredList.length,
                   itemBuilder: (context, index) {
-                    // Find the original index in the widget.list
+                    // Find the original index in the widget.list for provider lookup
                     final propertyId = filteredList[index]['property_id'];
                     final originalIndex = widget.list.indexWhere(
                         (property) => property['property_id'] == propertyId);
 
-                    if (filteredList[index]['owner_id'] !=
-                        FirebaseAuth.instance.currentUser!.uid) {
-                      return PropertyCard(
-                        index:
-                            originalIndex, // Use original index for provider lookup
-                        propertyId: filteredList[index]['property_id'],
-                        price: filteredList[index]['price'].toString(),
-                        area: filteredList[index]['area'],
-                        numBed: filteredList[index]['bedrooms'] + " BHK",
-                        propertyName: filteredList[index]['name'],
-                        onRefresh: refreshPage,
-                      );
-                    } else {
-                      return SizedBox
-                          .shrink(); // Return empty widget for user's own properties
-                    }
+                    return PropertyCard(
+                      index: originalIndex,
+                      propertyId: filteredList[index]['property_id'],
+                      price: filteredList[index]['price'].toString(),
+                      area: filteredList[index]['area'],
+                      numBed: filteredList[index]['bedrooms'] + " BHK",
+                      propertyName: filteredList[index]['name'],
+                      onRefresh: refreshPage,
+                    );
                   }),
         )
       ],

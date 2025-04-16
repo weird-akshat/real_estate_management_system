@@ -16,6 +16,7 @@ class _LoginPageState extends State<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   String? errorMessage;
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -82,14 +83,26 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ),
           ),
-        )
+        ),
+        // Loading overlay
+        if (isLoading)
+          Container(
+            color: Colors.black.withOpacity(0.5),
+            child: Center(
+              child: CircularProgressIndicator(
+                color: Colors.white,
+              ),
+            ),
+          ),
       ]),
     );
   }
 
   Future<void> login() async {
+    // Show loading indicator
     setState(() {
       errorMessage = null; // Clear previous error messages
+      isLoading = true;
     });
 
     try {
@@ -124,6 +137,11 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       setState(() {
         errorMessage = 'An unexpected error occurred. Please try again.';
+      });
+    } finally {
+      // Hide loading indicator regardless of success or failure
+      setState(() {
+        isLoading = false;
       });
     }
   }
@@ -165,13 +183,24 @@ class _LoginPageState extends State<LoginPage> {
           backgroundColor: const WidgetStatePropertyAll(Colors.black),
           fixedSize: const WidgetStatePropertyAll(Size(300, 50)),
         ),
-        onPressed: () async {
-          await login();
-        },
-        child: const Text(
-          'Login',
-          style: TextStyle(color: Colors.white),
-        ),
+        onPressed: isLoading
+            ? null
+            : () async {
+                await login();
+              },
+        child: isLoading
+            ? SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            : const Text(
+                'Login',
+                style: TextStyle(color: Colors.white),
+              ),
       ),
     );
   }
