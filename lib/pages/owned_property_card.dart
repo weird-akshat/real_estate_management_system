@@ -25,11 +25,11 @@ class OwnedPropertyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageRelative =
+    final imagesList =
         Provider.of<OwnedPropertiesProvider>(context, listen: false)
-                .images[propertyId]
-                ?.first ??
-            '';
+            .images[propertyId];
+    final imageRelative =
+        (imagesList != null && imagesList.isNotEmpty) ? imagesList.first : '';
     final imageUrl = imageRelative.isNotEmpty
         ? 'https://real-estate-flask-api.onrender.com$imageRelative'
         : 'https://via.placeholder.com/150';

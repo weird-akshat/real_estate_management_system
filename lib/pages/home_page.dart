@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:real_estate_management_system/pages/add_property_page.dart';
 import 'package:real_estate_management_system/pages/favorites_page.dart';
+import 'package:real_estate_management_system/pages/login_page.dart';
 import 'package:real_estate_management_system/pages/negotiation_page.dart';
 import 'package:real_estate_management_system/pages/owned_property_page.dart';
 import 'package:real_estate_management_system/pages/profile_page.dart';
@@ -211,10 +212,9 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             SidebarButton(Icons.logout, 'LogOut', widget, onTap: () async {
-              Navigator.of(context).pop();
+              Navigator.of(context).pop(); // Close the drawer
               await FirebaseAuth.instance.signOut();
             }),
-            SizedBox(height: 20),
           ],
         ),
       ),

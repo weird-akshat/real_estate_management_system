@@ -217,7 +217,7 @@ class _AddPropertyPageState extends State<AddPropertyPage> {
           .setPropertyId(responseData['property_id']);
       debugPrint("Success: ${response.body}");
 
-      Navigator.of(context).push(
+      Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) {
             return AddImagePage();
